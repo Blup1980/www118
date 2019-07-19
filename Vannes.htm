@@ -1,0 +1,774 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=9" />
+    <title>HTML5. SVG, JavaScript Machine Sample</title>
+    <link rel="Stylesheet" href=StyleSheet.css />
+    <script type="text/javascript" src="TcAdsWebService.js"></script>
+    <script type="text/javascript">
+        
+        (function (window) {
+
+            const  NETID = ""; // Empty string for local machine;
+            const  PORT = "801"; // PLC Runtime port;
+            const  SERVICE_URL = "http://" + window.document.location.hostname + "/TcAdsWebService/TcAdsWebService.dll"; // HTTP path to the target TcAdsWebService;
+
+            // The TcAdsWebService.Client object for ajax communication with the TcAdsWebService;
+            var client = new TcAdsWebService.Client(SERVICE_URL, null, null);
+
+            const  general_timeout = 500; // This timeout value is used for all requests;
+
+            var readLoopID = null; // The id of the read interval; Can be used to stop the polling if need;
+            const  readLoopDelay = 200;
+
+            var readSymbolValuesData = null; // This variable will store the Base64 encoded binary data string for the read sumcommando;
+
+            // Array of symbol names to read;
+            const handlesVarNames = [
+                    ".gati_xValve1",
+                    ".gati_xValve2",
+                    ".gati_xValve3",
+                    ".gati_xValve4",
+                    ".gati_xValve5",
+                    ".gati_xValve6",
+                    ".gati_xValve7",
+                    ".gati_xValve8",
+                    ".gati_xValve9",
+					".gatq_xValveLed",
+					"P_Valves.c_aeCorrectSequence"
+                ];
+				
+			const handlesVarSizes = [
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					9
+				];
+				
+			const totalPDOSize => handlesVarSizes.reduce((a,b) => a + b, 0)
+				
+            var handle_variables = [
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null
+				];
+
+            // Base64 encoded binary data strings for write requests;
+            var switchTrueBase64 = null;
+            var switchFalseBase64 = null;
+
+            // UI Elements;
+			var radioVannes = [
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null
+				];
+			
+			var radioVannesCorrect = [ 
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null
+				];
+			
+            // Occurs if the window has loaded;
+            window.onload = (function () {
+
+                // Initialize UI Elements;
+                radioVannes[0] = svgROOT.getElementById("radioVanne1");
+				radioVannes[1] = svgROOT.getElementById("radioVanne2");
+				radioVannes[2] = svgROOT.getElementById("radioVanne3");
+				radioVannes[3] = svgROOT.getElementById("radioVanne4");
+				radioVannes[4] = svgROOT.getElementById("radioVanne5");
+				radioVannes[5] = svgROOT.getElementById("radioVanne6");
+				radioVannes[6] = svgROOT.getElementById("radioVanne7");
+				radioVannes[7] = svgROOT.getElementById("radioVanne8");
+				radioVannes[8] = svgROOT.getElementById("radioVanne9");
+				
+				radioVannesCorrect[0] = svgROOT.getElementById("radioVanneCorrect1");
+				radioVannesCorrect[1] = svgROOT.getElementById("radioVanneCorrect2");
+				radioVannesCorrect[2] = svgROOT.getElementById("radioVanneCorrect3");
+				radioVannesCorrect[3] = svgROOT.getElementById("radioVanneCorrect4");
+				radioVannesCorrect[4] = svgROOT.getElementById("radioVanneCorrect5");
+				radioVannesCorrect[5] = svgROOT.getElementById("radioVanneCorrect6");
+				radioVannesCorrect[6] = svgROOT.getElementById("radioVanneCorrect7");
+				radioVannesCorrect[7] = svgROOT.getElementById("radioVanneCorrect8");
+				radioVannesCorrect[8] = svgROOT.getElementById("radioVanneCorrect9");
+				
+
+                // Prepare data for writing to switch variable;
+                var switchTrueBase64Writer = new TcAdsWebService.DataWriter();
+                switchTrueBase64Writer.writeBOOL(true);
+                switchTrueBase64 = switchTrueBase64Writer.getBase64EncodedData();
+
+                var switchFalseBase64Writer = new TcAdsWebService.DataWriter();
+                switchFalseBase64Writer.writeBOOL(false);
+                switchFalseBase64 = switchFalseBase64Writer.getBase64EncodedData();
+
+                // Create sumcommando for reading twincat symbol handles by symbol name;
+                var handleswriter = new TcAdsWebService.DataWriter();
+
+                // Write general information for each symbol handle to the TcAdsWebService.DataWriter object;
+                for (var i = 0; i < handlesVarNames.length; i++) {
+                    handleswriter.writeDINT(TcAdsWebService.TcAdsReservedIndexGroups.SymbolHandleByName);
+                    handleswriter.writeDINT(0);
+                    handleswriter.writeDINT(4); // Expected size; A handle has a size of 4 byte;
+                    handleswriter.writeDINT(handlesVarNames[i].length); // The length of the symbol name string;
+                }
+
+                // Write symbol names after the general information to the TcAdsWebService.DataWriter object;
+                for (var i = 0; i < handlesVarNames.length; i++) {
+                    handleswriter.writeString(handlesVarNames[i]);
+                }
+
+                // Send the list-read-write command to the TcAdsWebService by use of the readwrite function of the TcAdsWebService.Client object;
+                client.readwrite(
+                    NETID,
+                    PORT,
+                    0xF082, // IndexGroup = ADS list-read-write command; Used to request handles for twincat symbols;
+                    handlesVarNames.length, // IndexOffset = Count of requested symbol handles;
+                    (handlesVarNames.length * 4) + (handlesVarNames.length * 8), // Length of requested data + 4 byte errorcode and 4 byte length per twincat symbol;
+                    handleswriter.getBase64EncodedData(),
+                    RequestHandlesCallback,
+                    null,
+                    general_timeout,
+                    RequestHandlesTimeoutCallback,
+                    true);
+
+            });
+
+
+
+            // Occurs if the write request has finished;
+            var RadioBackgroundSlowWriteCallback = (function (e, s) {
+
+                if (e && e.isBusy) {
+                    // HANDLE PROGRESS TASKS HERE;
+                    // Exit callback function because request is still busy;
+                    return;
+                }
+
+                if (e && !e.hasError) {
+                    // Success
+                } else {
+
+                    if (e.error.getTypeString() == "TcAdsWebService.ResquestError") {
+                        // HANDLE TcAdsWebService.ResquestError HERE;
+                    }
+                    else if (e.error.getTypeString() == "TcAdsWebService.Error") {
+                        // HANDLE TcAdsWebService.Error HERE;
+                    }
+
+                }
+
+            });
+
+            // Occurs if the readwrite for the sumcommando has finished;
+            var RequestHandlesCallback = (function (e, s) {
+
+                if (e && e.isBusy) {
+                    // HANDLE PROGRESS TASKS HERE;
+                    // Exit callback function because request is still busy;
+                    return;
+                }
+
+                if (e && !e.hasError) {
+
+                    // Get TcAdsWebService.DataReader object from TcAdsWebService.Response object;
+                    var reader = e.reader;
+
+                    // Read error code and length for each handle;
+                    for (var i = 0; i < handlesVarNames.length; i++) {
+
+                        var err = reader.readDWORD();
+                        var len = reader.readDWORD();
+
+                        if (err != 0) {
+                            // HANDLE SUMCOMMANDO ERRORS HERE;
+                            return;
+                        }
+                    }
+
+					
+                    // Read handles from TcAdsWebService.DataReader object;
+					for (var i = 0; i < handle_variables.length; i++) {
+						handle_variables[i] = reader.readDWORD();
+					}
+
+                    // Create sum commando to read symbol values based on the handle;
+                    var readSymbolValuesWriter = new TcAdsWebService.DataWriter();
+					
+					for (var i = 0; i < handle_variables.length; i++) {
+						readSymbolValuesWriter.writeDINT(TcAdsWebService.TcAdsReservedIndexGroups.SymbolValueByHandle); // IndexGroup
+						readSymbolValuesWriter.writeDINT(handle_variables[i]); // IndexOffset = The target handle
+						readSymbolValuesWriter.writeDINT(handlesVarSizes[i]); // Size to read;
+					}					
+					
+					
+                    // Get Base64 encoded data from TcAdsWebService.DataWriter;
+                    readSymbolValuesData = readSymbolValuesWriter.getBase64EncodedData();
+
+                    // Start cyclic reading of symbol values;
+                    readLoopID = window.setInterval(ReadLoop, readLoopDelay);
+
+                } else {
+
+                    if (e.error.getTypeString() == "TcAdsWebService.ResquestError") {
+                        // HANDLE TcAdsWebService.ResquestError HERE;
+                    }
+                    else if (e.error.getTypeString() == "TcAdsWebService.Error") {
+                        // HANDLE TcAdsWebService.Error HERE;
+                    }
+
+                }
+
+            });
+
+            // Occurs if the readwrite for the sumcommando to request symbol handles runs into timeout;
+            var RequestHandlesTimeoutCallback = (function () {
+                // Handle Timeout here;
+            });
+
+            // Interval callback for cyclic reading;
+            var ReadLoop = (function () {
+
+                // Send the read-read-write command to the TcAdsWebService by use of the readwrite function of the TcAdsWebService.Client object;
+                client.readwrite(
+                    NETID,
+                    PORT,
+                    0xF080, // 0xF080 = Read command;
+                    handlesVarNames.length, // IndexOffset = Variables count;
+                    totalSize + (handlesVarNames.length * 4), // Length of requested data + 4 byte errorcode per variable;
+                    readSymbolValuesData,
+                    ReadCallback,
+                    null,
+                    general_timeout,
+                    ReadTimeoutCallback,
+                    true);
+
+            });
+
+            // Occurs if the read-read-write command has finished;
+            var ReadCallback = (function (e, s) {
+
+                if (e && e.isBusy) {
+                    // HANDLE PROGRESS TASKS HERE;
+                    // Exit callback function because request is still busy;
+                    return;
+                }
+
+                if (e && !e.hasError) {
+
+                    var reader = e.reader;
+
+                    // Read error codes from begin of TcAdsWebService.DataReader object;
+                    for (var i = 0; i < handlesVarNames.length; i++) {
+                        var err = reader.readDWORD();
+                        if (err != 0) {
+                            // HANDLE SUMCOMMANDO ERRORS HERE;
+                            return;
+                        }
+                    }
+
+                    // READ Symbol data from TcAdsWebService.DataReader object;
+					var Vannes = [
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+						];
+					for (var i = 0; i < Vannes.length; i++) {
+						Vannes[i] = reader.readUSINT();
+					}
+					var Led = reader.readBOOL();
+					
+					var VannesCorrect = [
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+						];
+					
+					for (var i = 0; i < VannesCorrect.length; i++) {
+						VannesCorrect[i] = reader.readUSINT();
+					}
+					
+                    // Update UI
+					for (var i = 0; i < Vannes.length; i++) {
+						if (Vannes[i]) {
+							radioVannes[i].style.fill = "#e10000";
+						} else {
+							radioVannes[i].style.fill = "#00c500";
+						}
+						
+						if (VannesCorrect[i]) {
+							radioVannesCorrect[i].style.fill = "#e10000";
+						} else {
+							radioVannesCorrect[i].style.fill = "#00c500";
+						}
+						
+					}
+					
+                } else {
+
+                    if (e.error.getTypeString() == "TcAdsWebService.ResquestError") {
+                        // HANDLE TcAdsWebService.ResquestError HERE;
+                    }
+                    else if (e.error.getTypeString() == "TcAdsWebService.Error") {
+                        // HANDLE TcAdsWebService.Error HERE;
+                    }
+                }
+
+            });
+
+            // Occurs if the read-read-write command runs into timeout;
+            var ReadTimeoutCallback = (function () {
+                // Handle Timeout here;
+            });
+
+            // Occurs if the release symbol handle request has finished;
+            var FreeHandleCallback = (function (e, s) {
+
+                if (e && e.isBusy) {
+                    // HANDLE PROGRESS TASKS HERE;
+                    // Exit callback function because request is still busy;
+                    return;
+                }
+
+                if (e && !e.hasError) {
+                    // Success
+                } else {
+
+                    if (e.error.getTypeString() == "TcAdsWebService.ResquestError") {
+                        // HANDLE TcAdsWebService.ResquestError HERE;
+                    }
+                    else if (e.error.getTypeString() == "TcAdsWebService.Error") {
+                        // HANDLE TcAdsWebService.Error HERE;
+                    }
+                }
+
+            });
+
+            // Occurs if the release symbol handle request runs into timeout;
+            var FreeHandleTimeoutCallback = (function () {
+                // Handle Timeout here;
+                alert("timeout");
+            });
+
+            // Occurs if the browser window or tab is closed;
+            //  IndexGroup 0xF006 = Release Symbol Handle;
+            //  IndexOffset = Symbol handle;
+            window.onbeforeunload = (function () {
+
+                // Free Handles
+				for (var i = 0; i < handle_variables.length; i++) {
+					client.write(NETID, PORT, 0xF006, handle_variables[i], "", FreeHandleCallback, handlesVarNames[i], general_timeout, FreeHandleTimeoutCallback, true);
+				}
+            });
+
+        })(window);
+
+    </script>
+</head>
+<body>
+    <svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svgROOT"
+   height="100%"
+   width="100%"
+   viewBox="0 0 800 600"
+   version="1.1"
+   style="display: block;"
+   sodipodi:docname="vannes.svg"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)">
+  <metadata
+     id="metadata95">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     id="namedview93"
+     showgrid="false"
+     inkscape:zoom="1.42"
+     inkscape:cx="415.77839"
+     inkscape:cy="280.3186"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svgROOT" />
+  <defs
+     id="defs2987">
+    <linearGradient
+       id="linearGradient3771">
+      <stop
+         id="stop3773"
+         stop-color="#bdeefd"
+         offset="0" />
+      <stop
+         id="stop3775"
+         stop-color="#1e7cd6"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient3777"
+       y2="300.21609"
+       xlink:href="#linearGradient4227"
+       gradientUnits="userSpaceOnUse"
+       x2="800.05182"
+       y1="300.21609"
+       x1="0.29462782" />
+    <linearGradient
+       id="linearGradient4137"
+       y2="337.08334"
+       xlink:href="#linearGradient3771"
+       gradientUnits="userSpaceOnUse"
+       x2="507.06943"
+       y1="337.08334"
+       x1="447.51389"
+       gradientTransform="matrix(0.69776118,0,0,0.69776118,136.10117,318.87665)" />
+    <linearGradient
+       id="linearGradient4227"
+       y2="337.08334"
+       gradientUnits="userSpaceOnUse"
+       y1="337.08334"
+       x2="507.06943"
+       x1="447.51389"
+       gradientTransform="matrix(0.69776118,0,0,0.69776118,277.03868,318.94156)">
+      <stop
+         id="stop3773-2"
+         stop-color="#bdeefd"
+         offset="0" />
+      <stop
+         id="stop3775-4"
+         stop-color="#1e7cd6"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient4399"
+       y2="505.71912"
+       gradientUnits="userSpaceOnUse"
+       x2="316.50488"
+       gradientTransform="matrix(1.2229961,0,0,1.0384615,-21.086483,-41.773622)"
+       y1="463.88196"
+       x1="316.72495">
+      <stop
+         id="stop4395"
+         stop-color="#c1d3f4"
+         offset="0" />
+      <stop
+         id="stop4403"
+         stop-color="#486fbf"
+         offset="0.30596605" />
+      <stop
+         id="stop4405"
+         stop-color="#486fbf"
+         stop-opacity="0.74901962"
+         offset="0.66658556" />
+      <stop
+         id="stop4401"
+         stop-color="#c1d3f4"
+         offset="1" />
+    </linearGradient>
+    <filter
+       id="filter4407"
+       color-interpolation-filters="sRGB">
+      <feGaussianBlur
+         id="feGaussianBlur4409"
+         stdDeviation="4"
+         result="result8" />
+      <feOffset
+         id="feOffset4411"
+         result="result11"
+         dx="4"
+         dy="4" />
+      <feComposite
+         id="feComposite4413"
+         operator="in"
+         in="SourceGraphic"
+         in2="result11"
+         result="result6" />
+      <feFlood
+         id="feFlood4415"
+         flood-color="rgb(0,0,0)"
+         in="result6"
+         flood-opacity="1"
+         result="result10" />
+      <feBlend
+         id="feBlend4417"
+         result="result12"
+         in="result6"
+         in2="result10"
+         mode="normal" />
+      <feComposite
+         id="feComposite4419"
+         operator="in"
+         in2="SourceGraphic"
+         result="result2" />
+    </filter>
+  </defs>
+  <rect
+     style="fill:url(#linearGradient3777);fill-opacity:1.0"
+     x="0.29462782"
+     y="0.43237433"
+     width="799.7572"
+     height="599.56744"
+     id="rectBackground" />
+  <g
+     id="gV1"
+     transform="translate(553.96561,1.2565289)">
+    <path
+       inkscape:transform-center-y="18.656474"
+       inkscape:transform-center-x="-40.111338"
+       inkscape:label="#radioVanneCorrect1"
+       id="radioVanneCorrect1"
+       d="m 122.19841,151.52038 a 18.771001,18.771001 0 1 1 -37.542002,0 18.771001,18.771001 0 1 1 37.542002,0 z"
+       stroke-miterlimit="4"
+       inkscape:connector-curvature="0"
+       style="display:block;fill:#00c500;fill-opacity:1;stroke-width:0;stroke-miterlimit:4" />
+    <path
+       inkscape:label="#radioVanne1"
+       id="radioVanne1"
+       d="m 116.44824,151.52038 a 13.020835,13.020835 0 1 1 -26.041668,0 13.020835,13.020835 0 1 1 26.041668,0 z"
+       stroke-miterlimit="4"
+       inkscape:connector-curvature="0"
+       style="fill:#000000;stroke-width:0;stroke-miterlimit:4" />
+  </g>
+  <text
+     line-height="125%"
+     x="42.348625"
+     y="71.72036"
+     font-variant="normal"
+     font-size="64px"
+     font-stretch="normal"
+     font-style="normal"
+     transform="scale(0.99878728,1.0012142)"
+     xml:space="preserve"
+     font-weight="normal"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:64px;line-height:125%;font-family:Arial;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff"
+     id="textHeadline"><tspan
+       y="71.72036"
+       x="42.348625"
+       id="tspan4442"
+       style="font-size:48px">118 Au feu ! Vannes</tspan></text>
+  <g
+     id="gV2"
+     transform="translate(610.50205,166.31948)">
+    <path
+       inkscape:transform-center-y="18.656474"
+       inkscape:transform-center-x="-40.111338"
+       inkscape:label="#radioVanneCorrect2"
+       id="radioVanneCorrect2"
+       d="m 71.555026,160.05011 a 18.771,18.771 0 1 1 -37.541998,0 18.771,18.771 0 1 1 37.541998,0 z"
+       stroke-miterlimit="4"
+       inkscape:connector-curvature="0"
+       style="display:block;fill:#00c500;fill-opacity:1;stroke-width:0;stroke-miterlimit:4" />
+    <path
+       inkscape:label="#radioVanne2"
+       id="radioVanne2"
+       d="m 65.804862,160.05011 a 13.020835,13.020835 0 1 1 -26.04167,0 13.020835,13.020835 0 1 1 26.04167,0 z"
+       stroke-miterlimit="4"
+       inkscape:connector-curvature="0"
+       style="display:block;fill:#000000;stroke-width:0;stroke-miterlimit:4" />
+  </g>
+  <g
+     id="gV3"
+     transform="translate(472.06847,32.865527)">
+    <path
+       inkscape:transform-center-y="18.656474"
+       inkscape:transform-center-x="-40.111338"
+       inkscape:label="#radioVanneCorrect3"
+       id="radioVanneCorrect3"
+       d="m 74.542802,200.38508 a 18.771,18.771 0 1 1 -37.541998,0 18.771,18.771 0 1 1 37.541998,0 z"
+       stroke-miterlimit="4"
+       inkscape:connector-curvature="0"
+       style="display:block;fill:#00c500;fill-opacity:1;stroke-width:0;stroke-miterlimit:4" />
+    <path
+       inkscape:label="#radioVanne3"
+       id="radioVanne3"
+       d="m 68.792638,200.38508 a 13.020835,13.020835 0 1 1 -26.04167,0 13.020835,13.020835 0 1 1 26.04167,0 z"
+       stroke-miterlimit="4"
+       inkscape:connector-curvature="0"
+       style="display:block;fill:#000000;stroke-width:0;stroke-miterlimit:4" />
+  </g>
+  <g
+     id="gV"
+     transform="translate(442.19072,166.31948)"
+     inkscape:label="#gV4">
+    <path
+       inkscape:transform-center-y="18.656474"
+       inkscape:transform-center-x="-40.111338"
+       inkscape:label="#radioVanneCorrect4"
+       id="radioVanneCorrect4"
+       d="m 73.048914,241.46698 a 18.771,18.771 0 1 1 -37.541998,0 18.771,18.771 0 1 1 37.541998,0 z"
+       stroke-miterlimit="4"
+       inkscape:connector-curvature="0"
+       style="display:block;fill:#00c500;fill-opacity:1;stroke-width:0;stroke-miterlimit:4" />
+    <path
+       inkscape:label="#radioVanne4"
+       id="radioVanne4"
+       d="m 67.29875,241.46698 a 13.020835,13.020835 0 1 1 -26.04167,0 13.020835,13.020835 0 1 1 26.04167,0 z"
+       stroke-miterlimit="4"
+       inkscape:connector-curvature="0"
+       style="display:block;fill:#000000;stroke-width:0;stroke-miterlimit:4" />
+  </g>
+  <g
+     id="gV5"
+     transform="translate(279.85494,-104.57213)">
+    <path
+       inkscape:transform-center-y="18.656474"
+       inkscape:transform-center-x="-40.111338"
+       inkscape:label="#radioVanneCorrect5"
+       id="radioVanneCorrect5"
+       d="m 69.065214,285.78565 a 18.771,18.771 0 1 1 -37.541998,0 18.771,18.771 0 1 1 37.541998,0 z"
+       stroke-miterlimit="4"
+       inkscape:connector-curvature="0"
+       style="display:block;fill:#00c500;fill-opacity:1;stroke-width:0;stroke-miterlimit:4" />
+    <path
+       inkscape:label="#radioVanne5"
+       id="radioVanne5"
+       d="m 63.31505,285.78565 a 13.020835,13.020835 0 1 1 -26.04167,0 13.020835,13.020835 0 1 1 26.04167,0 z"
+       stroke-miterlimit="4"
+       inkscape:connector-curvature="0"
+       style="display:block;fill:#000000;stroke-width:0;stroke-miterlimit:4" />
+  </g>
+  <g
+     id="gV6"
+     transform="translate(225.07906,46.808477)">
+    <path
+       inkscape:transform-center-y="18.656474"
+       inkscape:transform-center-x="-40.111338"
+       inkscape:label="#radioVanneCorrect6"
+       id="radioVanneCorrect6"
+       d="m 66.077439,326.61857 a 18.771,18.771 0 1 1 -37.541998,0 18.771,18.771 0 1 1 37.541998,0 z"
+       stroke-miterlimit="4"
+       inkscape:connector-curvature="0"
+       style="display:block;fill:#00c500;fill-opacity:1;stroke-width:0;stroke-miterlimit:4" />
+    <path
+       inkscape:label="#radioVanne6"
+       id="radioVanne6"
+       d="m 60.327275,326.61857 a 13.020835,13.020835 0 1 1 -26.04167,0 13.020835,13.020835 0 1 1 26.04167,0 z"
+       stroke-miterlimit="4"
+       inkscape:connector-curvature="0"
+       style="display:block;fill:#000000;stroke-width:0;stroke-miterlimit:4" />
+  </g>
+  <g
+     id="gV7"
+     transform="translate(244.00164,78.678079)">
+    <path
+       inkscape:transform-center-y="18.656474"
+       inkscape:transform-center-x="-40.111338"
+       inkscape:label="#radioVanneCorrect7"
+       id="radioVanneCorrect7"
+       d="m 65.081514,371.68418 a 18.771,18.771 0 1 1 -37.541998,0 18.771,18.771 0 1 1 37.541998,0 z"
+       stroke-miterlimit="4"
+       inkscape:connector-curvature="0"
+       style="display:block;fill:#00c500;fill-opacity:1;stroke-width:0;stroke-miterlimit:4" />
+    <path
+       inkscape:label="#radioVanne7"
+       id="radioVanne7"
+       d="m 59.331352,371.68418 a 13.020838,13.020838 0 1 1 -26.041675,0 13.020838,13.020838 0 1 1 26.041675,0 z"
+       stroke-miterlimit="4"
+       inkscape:connector-curvature="0"
+       style="display:block;fill:#000000;stroke-width:0;stroke-miterlimit:4" />
+  </g>
+  <g
+     id="gV8"
+     transform="translate(54.775877,-263.92014)">
+    <path
+       inkscape:transform-center-y="18.656474"
+       inkscape:transform-center-x="-40.111338"
+       inkscape:label="#radioVanneCorrect8"
+       id="radioVanneCorrect8"
+       d="m 67.073364,422.22738 a 18.771,18.771 0 1 1 -37.541998,0 18.771,18.771 0 1 1 37.541998,0 z"
+       stroke-miterlimit="4"
+       inkscape:connector-curvature="0"
+       style="display:block;fill:#00c500;fill-opacity:1;stroke-width:0;stroke-miterlimit:4" />
+    <path
+       inkscape:label="#radioVanne8"
+       id="radioVanne8"
+       d="m 61.3232,422.22738 a 13.020835,13.020835 0 1 1 -26.04167,0 13.020835,13.020835 0 1 1 26.04167,0 z"
+       stroke-miterlimit="4"
+       inkscape:connector-curvature="0"
+       style="display:block;fill:#000000;stroke-width:0;stroke-miterlimit:4;fill-opacity:1" />
+  </g>
+  <g
+     id="gV9"
+     transform="translate(32.865526,-148.39283)">
+    <path
+       inkscape:transform-center-y="18.656474"
+       inkscape:transform-center-x="-40.111338"
+       inkscape:label="#radioVanneCorrect9"
+       id="radioVanneCorrect9"
+       d="m 90.936403,466.44616 a 18.771,18.771 0 1 1 -37.541998,0 18.771,18.771 0 1 1 37.541998,0 z"
+       stroke-miterlimit="4"
+       inkscape:connector-curvature="0"
+       style="display:block;fill:#00c500;fill-opacity:1;stroke-width:0;stroke-miterlimit:4" />
+    <path
+       inkscape:label="#radioVanne9"
+       id="radioVanne9"
+       d="m 85.186239,466.44616 a 13.020835,13.020835 0 1 1 -26.04167,0 13.020835,13.020835 0 1 1 26.04167,0 z"
+       stroke-miterlimit="4"
+       inkscape:connector-curvature="0"
+       style="display:block;fill:#000000;stroke-width:0;stroke-miterlimit:4" />
+  </g>
+</svg>
+</body>
+</html>
