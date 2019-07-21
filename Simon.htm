@@ -1,0 +1,943 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=9" />
+    <title>HTML5. SVG, JavaScript Machine Sample</title>
+    <link rel="Stylesheet" href=StyleSheet.css />
+    <script type="text/javascript" src="TcAdsWebService.js"></script>
+    <script type="text/javascript">
+        
+        (function (window) {
+
+            const  NETID = ""; // Empty string for local machine;
+            const  PORT = "801"; // PLC Runtime port;
+            const  SERVICE_URL = "http://" + window.document.location.hostname + "/TcAdsWebService.dll"; // HTTP path to the target TcAdsWebService;
+
+            // The TcAdsWebService.Client object for ajax communication with the TcAdsWebService;
+            var client = new TcAdsWebService.Client(SERVICE_URL, null, null);
+
+            const  general_timeout = 500; // This timeout value is used for all requests;
+
+            var readLoopID = null; // The id of the read interval; Can be used to stop the polling if need;
+            const  readLoopDelay = 200;
+
+            var readSymbolValuesData = null; // This variable will store the Base64 encoded binary data string for the read sumcommando;
+
+            // Array of symbol names to read;
+			const handlesVarNames = [
+					".gatq_xRedLamp",
+                    ".gatq_xGreenLamp",
+                    ".gatq_xYellowLamp",
+                    ".gatq_xWhiteLamp",
+                    ".gatq_xRedBtnLamp",
+                    ".gatq_xGreenBtnLamp",
+					".gatq_xYellowBtnLamp",
+					".gatq_xWhiteBtnLamp",
+					".gatq_xCorrectLed1",
+					".gatq_xCorrectLed2",
+					".gatq_xCorrectLed3",
+					".gatq_xCorrectLed4",
+					".gatq_xCorrectLed5",
+					".gatq_xCorrectLed6",
+					".gatq_xCorrectLed7",
+					".gatq_xCorrectLed8",
+					".gatq_xCorrectLed9",
+					".gatq_xCorrectLed10",
+					".gati_xRedButton",
+					".gati_xGreenButton",
+					".gati_xYellowButton",
+					".gati_xWhiteButton",
+					"P_Simon.c_aeCorrectSequence"
+                ];
+				
+				
+		
+			const handlesVarSizes = [
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					16
+				];
+				
+			const totalPDOSize = handlesVarSizes.reduce(function(pv, cv) { return pv + parseInt(cv); }, 0);
+				
+            var handle_variables = [
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null
+				];
+
+            // Base64 encoded binary data strings for write requests;
+            var switchTrueBase64 = null;
+            var switchFalseBase64 = null;
+
+            // UI Elements;
+			var UIbtnG = null;
+			var UIbtnW = null;
+			var UIbtnR = null;
+			var UIbtnY = null;
+							
+			var UILightG = null;
+			var UILightW = null;
+			var UILightR = null;
+			var UILightY = null;
+					
+			var UIResult = [
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null			
+				];
+			
+			var UICorrect = [ 
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null
+				];
+			
+            // Occurs if the window has loaded;
+            window.onload = (function () {
+
+                // Initialize UI Elements;
+                UIbtnG = svgROOT.getElementById("btnG");
+				UIbtnW = svgROOT.getElementById("btnW");
+				UIbtnR = svgROOT.getElementById("btnR");
+				UIbtnY = svgROOT.getElementById("btnY");
+					
+				UILightG = svgROOT.getElementById("LightG");
+				UILightW = svgROOT.getElementById("LightW");
+				UILightR = svgROOT.getElementById("LightR");
+				UILightY = svgROOT.getElementById("LightY");
+
+				
+				UIResult[0] = svgROOT.getElementById("okLight11");
+				UIResult[1] = svgROOT.getElementById("okLight12");
+				UIResult[2] = svgROOT.getElementById("okLight13");
+				UIResult[3] = svgROOT.getElementById("okLight14");
+				UIResult[4] = svgROOT.getElementById("okLight15");
+				UIResult[5] = svgROOT.getElementById("okLight16");
+				UIResult[6] = svgROOT.getElementById("okLight17");
+				UIResult[7] = svgROOT.getElementById("okLight18");
+				UIResult[8] = svgROOT.getElementById("okLight19");
+				UIResult[9] = svgROOT.getElementById("okLight110");
+				
+				UICorrect[0] = svgROOT.getElementById("sequence1");
+				UICorrect[1] = svgROOT.getElementById("sequence2");
+				UICorrect[2] = svgROOT.getElementById("sequence3");
+				UICorrect[3] = svgROOT.getElementById("sequence4");
+				UICorrect[4] = svgROOT.getElementById("sequence5");
+				UICorrect[5] = svgROOT.getElementById("sequence6");
+				UICorrect[6] = svgROOT.getElementById("sequence7");
+				UICorrect[7] = svgROOT.getElementById("sequence8");
+
+				
+
+                // Prepare data for writing to switch variable;
+                var switchTrueBase64Writer = new TcAdsWebService.DataWriter();
+                switchTrueBase64Writer.writeBOOL(true);
+                switchTrueBase64 = switchTrueBase64Writer.getBase64EncodedData();
+
+                var switchFalseBase64Writer = new TcAdsWebService.DataWriter();
+                switchFalseBase64Writer.writeBOOL(false);
+                switchFalseBase64 = switchFalseBase64Writer.getBase64EncodedData();
+
+                // Create sumcommando for reading twincat symbol handles by symbol name;
+                var handleswriter = new TcAdsWebService.DataWriter();
+
+                // Write general information for each symbol handle to the TcAdsWebService.DataWriter object;
+                for (var i = 0; i < handlesVarNames.length; i++) {
+                    handleswriter.writeDINT(TcAdsWebService.TcAdsReservedIndexGroups.SymbolHandleByName);
+                    handleswriter.writeDINT(0);
+                    handleswriter.writeDINT(4); // Expected size; A handle has a size of 4 byte;
+                    handleswriter.writeDINT(handlesVarNames[i].length); // The length of the symbol name string;
+                }
+
+                // Write symbol names after the general information to the TcAdsWebService.DataWriter object;
+                for (var i = 0; i < handlesVarNames.length; i++) {
+                    handleswriter.writeString(handlesVarNames[i]);
+                }
+
+                // Send the list-read-write command to the TcAdsWebService by use of the readwrite function of the TcAdsWebService.Client object;
+                client.readwrite(
+                    NETID,
+                    PORT,
+                    0xF082, // IndexGroup = ADS list-read-write command; Used to request handles for twincat symbols;
+                    handlesVarNames.length, // IndexOffset = Count of requested symbol handles;
+                    (handlesVarNames.length * 4) + (handlesVarNames.length * 8), // Length of requested data + 4 byte errorcode and 4 byte length per twincat symbol;
+                    handleswriter.getBase64EncodedData(),
+                    RequestHandlesCallback,
+                    null,
+                    general_timeout,
+                    RequestHandlesTimeoutCallback,
+                    true);
+
+            });
+
+
+
+            // Occurs if the write request has finished;
+            var RadioBackgroundSlowWriteCallback = (function (e, s) {
+
+                if (e && e.isBusy) {
+                    // HANDLE PROGRESS TASKS HERE;
+                    // Exit callback function because request is still busy;
+                    return;
+                }
+
+                if (e && !e.hasError) {
+                    // Success
+                } else {
+
+                    if (e.error.getTypeString() == "TcAdsWebService.ResquestError") {
+                        // HANDLE TcAdsWebService.ResquestError HERE;
+                    }
+                    else if (e.error.getTypeString() == "TcAdsWebService.Error") {
+                        // HANDLE TcAdsWebService.Error HERE;
+                    }
+
+                }
+
+            });
+
+            // Occurs if the readwrite for the sumcommando has finished;
+            var RequestHandlesCallback = (function (e, s) {
+
+                if (e && e.isBusy) {
+                    // HANDLE PROGRESS TASKS HERE;
+                    // Exit callback function because request is still busy;
+                    return;
+                }
+
+                if (e && !e.hasError) {
+
+                    // Get TcAdsWebService.DataReader object from TcAdsWebService.Response object;
+                    var reader = e.reader;
+
+                    // Read error code and length for each handle;
+                    for (var i = 0; i < handlesVarNames.length; i++) {
+
+                        var err = reader.readDWORD();
+                        var len = reader.readDWORD();
+
+                        if (err != 0) {
+                            // HANDLE SUMCOMMANDO ERRORS HERE;
+                            return;
+                        }
+                    }
+
+					
+                    // Read handles from TcAdsWebService.DataReader object;
+					for (var i = 0; i < handlesVarNames.length; i++) {
+						handle_variables[i] = reader.readDWORD();
+					}
+
+                    // Create sum commando to read symbol values based on the handle;
+                    var readSymbolValuesWriter = new TcAdsWebService.DataWriter();
+					
+					for (var i = 0; i < handlesVarNames.length; i++) {
+						readSymbolValuesWriter.writeDINT(TcAdsWebService.TcAdsReservedIndexGroups.SymbolValueByHandle); // IndexGroup
+						readSymbolValuesWriter.writeDINT(handle_variables[i]); // IndexOffset = The target handle
+						readSymbolValuesWriter.writeDINT(handlesVarSizes[i]); // Size to read;
+					}					
+					
+					
+                    // Get Base64 encoded data from TcAdsWebService.DataWriter;
+                    readSymbolValuesData = readSymbolValuesWriter.getBase64EncodedData();
+
+                    // Start cyclic reading of symbol values;
+                    readLoopID = window.setInterval(ReadLoop, readLoopDelay);
+
+                } else {
+
+                    if (e.error.getTypeString() == "TcAdsWebService.ResquestError") {
+                        // HANDLE TcAdsWebService.ResquestError HERE;
+                    }
+                    else if (e.error.getTypeString() == "TcAdsWebService.Error") {
+                        // HANDLE TcAdsWebService.Error HERE;
+                    }
+
+                }
+
+            });
+
+            // Occurs if the readwrite for the sumcommando to request symbol handles runs into timeout;
+            var RequestHandlesTimeoutCallback = (function () {
+                // Handle Timeout here;
+            });
+
+            // Interval callback for cyclic reading;
+            var ReadLoop = (function () {
+
+                // Send the read-read-write command to the TcAdsWebService by use of the readwrite function of the TcAdsWebService.Client object;
+                client.readwrite(
+                    NETID,
+                    PORT,
+                    0xF080, // 0xF080 = Read command;
+                    handlesVarNames.length, // IndexOffset = Variables count;
+                    totalPDOSize + (handlesVarNames.length * 4), // Length of requested data + 4 byte errorcode per variable;
+                    readSymbolValuesData,
+                    ReadCallback,
+                    null,
+                    general_timeout,
+                    ReadTimeoutCallback,
+                    true);
+
+            });
+
+            // Occurs if the read-read-write command has finished;
+            var ReadCallback = (function (e, s) {
+
+                if (e && e.isBusy) {
+                    // HANDLE PROGRESS TASKS HERE;
+                    // Exit callback function because request is still busy;
+                    return;
+                }
+
+                if (e && !e.hasError) {
+
+                    var reader = e.reader;
+
+                    // Read error codes from begin of TcAdsWebService.DataReader object;
+                    for (var i = 0; i < handlesVarNames.length; i++) {
+                        var err = reader.readDWORD();
+                        if (err != 0) {
+                            // HANDLE SUMCOMMANDO ERRORS HERE;
+                            return;
+                        }
+                    }
+					
+                    // READ Symbol data from TcAdsWebService.DataReader object;
+					var RedLamp = reader.readBOOL();
+					var GreenLamp = reader.readBOOL();
+					var YellowLamp = reader.readBOOL();
+					var xWhiteLamp = reader.readBOOL();
+					var RedBtnLamp = reader.readBOOL();
+					var GreenBtnLamp = reader.readBOOL();
+					var YellowBtnLamp = reader.readBOOL();
+					var WhiteBtnLamp = reader.readBOOL();
+					
+					var CorrectLed = [
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0
+						];
+					for (var i = 0; i < CorrectLed.length; i++) {
+						CorrectLed[i] = reader.readBOOL();
+					}				
+					
+					var RedButton = reader.readBOOL();
+					var GreenButton = reader.readBOOL();
+					var YellowButton = reader.readBOOL();
+					var WhiteButton = reader.readBOOL();
+					
+					var CorrectSequence = [ 
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0
+						];
+					for (var i = 0; i < CorrectSequence.length; i++) {
+						CorrectSequence[i] = reader.readINT();
+					}
+			
+                    // Update UI
+					if (GreenLamp) {
+						UILightG.style.fill = "#11f911"
+					} else {
+						UILightG.style.fill = "#037003"
+					}
+					
+					if (WhiteLamp) {
+						UILightW.style.fill = "#f6f6f6"
+					} else {
+						UILightW.style.fill = "#8a8a8a"
+					}		
+					
+					if (RedLamp) {
+						UILightR.style.fill = "#ff2b31"
+					} else {
+						UILightR.style.fill = "#880003"
+					}
+					
+					if (YellowLamp) {
+						UILightY.style.fill = "#ffb516"
+					} else {
+						UILightY.style.fill = "#b87e00"
+					}
+					
+					
+					if (RedButton) {
+						UIbtnG.style.fill = "#11f911"
+					} else {
+						UIbtnG.style.fill = "#037003"
+					}
+					
+					if (WhiteButton) {
+						UIbtnW.style.fill = "#f6f6f6"
+					} else {
+						UIbtnW.style.fill = "#8a8a8a"
+					}		
+					
+					if (RedButton) {
+						UIbtnR.style.fill = "#ff2b31"
+					} else {
+						UIbtnR.style.fill = "#880003"
+					}
+					
+					if (YellowButton) {
+						UIbtnY.style.fill = "#ffb516"
+					} else {
+						UIbtnY.style.fill = "#b87e00"
+					}				
+
+
+                } else {
+
+                    if (e.error.getTypeString() == "TcAdsWebService.ResquestError") {
+                        // HANDLE TcAdsWebService.ResquestError HERE;
+                    }
+                    else if (e.error.getTypeString() == "TcAdsWebService.Error") {
+                        // HANDLE TcAdsWebService.Error HERE;
+                    }
+                }
+
+            });
+
+            // Occurs if the read-read-write command runs into timeout;
+            var ReadTimeoutCallback = (function () {
+                // Handle Timeout here;
+            });
+
+            // Occurs if the release symbol handle request has finished;
+            var FreeHandleCallback = (function (e, s) {
+
+                if (e && e.isBusy) {
+                    // HANDLE PROGRESS TASKS HERE;
+                    // Exit callback function because request is still busy;
+                    return;
+                }
+
+                if (e && !e.hasError) {
+                    // Success
+                } else {
+
+                    if (e.error.getTypeString() == "TcAdsWebService.ResquestError") {
+                        // HANDLE TcAdsWebService.ResquestError HERE;
+                    }
+                    else if (e.error.getTypeString() == "TcAdsWebService.Error") {
+                        // HANDLE TcAdsWebService.Error HERE;
+                    }
+                }
+
+            });
+
+            // Occurs if the release symbol handle request runs into timeout;
+            var FreeHandleTimeoutCallback = (function () {
+                // Handle Timeout here;
+                alert("timeout");
+            });
+
+            // Occurs if the browser window or tab is closed;
+            //  IndexGroup 0xF006 = Release Symbol Handle;
+            //  IndexOffset = Symbol handle;
+            window.onbeforeunload = (function () {
+
+                // Free Handles
+				for (var i = 0; i < handle_variables.length; i++) {
+					client.write(NETID, PORT, 0xF006, handle_variables[i], "", FreeHandleCallback, handlesVarNames[i], general_timeout, FreeHandleTimeoutCallback, true);
+				}
+            });
+
+        })(window);
+
+    </script>
+</head>
+<body>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svgROOT"
+   height="100%"
+   width="100%"
+   viewBox="0 0 800 600"
+   version="1.1"
+   style="display: block;"
+   sodipodi:docname="simon.svg"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)">
+  <metadata
+     id="metadata95">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="2560"
+     inkscape:window-height="1387"
+     id="namedview93"
+     showgrid="false"
+     inkscape:zoom="2.0081833"
+     inkscape:cx="239.6332"
+     inkscape:cy="271.86473"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svgROOT"
+     showguides="false" />
+  <defs
+     id="defs2987">
+    <linearGradient
+       id="linearGradient3771">
+      <stop
+         id="stop3773"
+         stop-color="#bdeefd"
+         offset="0" />
+      <stop
+         id="stop3775"
+         stop-color="#1e7cd6"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient3777"
+       y2="300.21609"
+       xlink:href="#linearGradient4227"
+       gradientUnits="userSpaceOnUse"
+       x2="800.05182"
+       y1="300.21609"
+       x1="0.29462782" />
+    <linearGradient
+       id="linearGradient4137"
+       y2="337.08334"
+       xlink:href="#linearGradient3771"
+       gradientUnits="userSpaceOnUse"
+       x2="507.06943"
+       y1="337.08334"
+       x1="447.51389"
+       gradientTransform="matrix(0.69776118,0,0,0.69776118,136.10117,318.87665)" />
+    <linearGradient
+       id="linearGradient4227"
+       y2="337.08334"
+       gradientUnits="userSpaceOnUse"
+       y1="337.08334"
+       x2="507.06943"
+       x1="447.51389"
+       gradientTransform="matrix(0.69776118,0,0,0.69776118,277.03868,318.94156)">
+      <stop
+         id="stop3773-2"
+         stop-color="#bdeefd"
+         offset="0" />
+      <stop
+         id="stop3775-4"
+         stop-color="#1e7cd6"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient4399"
+       y2="505.71912"
+       gradientUnits="userSpaceOnUse"
+       x2="316.50488"
+       gradientTransform="matrix(1.2229961,0,0,1.0384615,-21.086483,-41.773622)"
+       y1="463.88196"
+       x1="316.72495">
+      <stop
+         id="stop4395"
+         stop-color="#c1d3f4"
+         offset="0" />
+      <stop
+         id="stop4403"
+         stop-color="#486fbf"
+         offset="0.30596605" />
+      <stop
+         id="stop4405"
+         stop-color="#486fbf"
+         stop-opacity="0.74901962"
+         offset="0.66658556" />
+      <stop
+         id="stop4401"
+         stop-color="#c1d3f4"
+         offset="1" />
+    </linearGradient>
+    <filter
+       id="filter4407"
+       color-interpolation-filters="sRGB">
+      <feGaussianBlur
+         id="feGaussianBlur4409"
+         stdDeviation="4"
+         result="result8" />
+      <feOffset
+         id="feOffset4411"
+         result="result11"
+         dx="4"
+         dy="4" />
+      <feComposite
+         id="feComposite4413"
+         operator="in"
+         in="SourceGraphic"
+         in2="result11"
+         result="result6" />
+      <feFlood
+         id="feFlood4415"
+         flood-color="rgb(0,0,0)"
+         in="result6"
+         flood-opacity="1"
+         result="result10" />
+      <feBlend
+         id="feBlend4417"
+         result="result12"
+         in="result6"
+         in2="result10"
+         mode="normal" />
+      <feComposite
+         id="feComposite4419"
+         operator="in"
+         in2="SourceGraphic"
+         result="result2" />
+    </filter>
+  </defs>
+  <rect
+     style="fill:url(#linearGradient3777);fill-opacity:1.0"
+     x="0.29462782"
+     y="0.43237433"
+     width="799.7572"
+     height="599.56744"
+     id="rectBackground" />
+  <text
+     line-height="125%"
+     x="42.348625"
+     y="71.72036"
+     font-variant="normal"
+     font-size="64px"
+     font-stretch="normal"
+     font-style="normal"
+     transform="scale(0.99878728,1.0012142)"
+     xml:space="preserve"
+     font-weight="normal"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:64px;line-height:125%;font-family:Arial;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff"
+     id="textHeadline"><tspan
+       y="71.72036"
+       x="42.348625"
+       id="tspan4442"
+       style="font-size:48px">118 Au feu ! Disjoncteurs</tspan></text>
+  <ellipse
+     r="19.918501"
+     cy="199.26466"
+     cx="-79.549515"
+     id="ellipse891"
+     style="fill:#06f627;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+  <ellipse
+     r="19.918501"
+     cy="199.26466"
+     cx="-79.549515"
+     id="ellipse893"
+     style="fill:#06f627;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+  <rect
+     style="opacity:1;fill:#11f911;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="btnG"
+     width="61.971832"
+     height="38.028168"
+     x="105.69852"
+     y="249.82312"
+     inkscape:label="" />
+  <rect
+     style="display:block;opacity:1;fill:#f5f5f5;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="btnW"
+     width="61.971832"
+     height="38.028168"
+     x="255.34253"
+     y="249.82312"
+     inkscape:label="" />
+  <circle
+     style="opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="okLight1"
+     cx="97.102692"
+     cy="377.76648"
+     r="14.440913"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="okLight2"
+     cx="153.74593"
+     cy="377.76648"
+     r="14.440913"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="okLight3"
+     cx="210.38916"
+     cy="377.76648"
+     r="14.440913"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="okLight4"
+     cx="267.03241"
+     cy="377.76648"
+     r="14.440913"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="okLight5"
+     cx="323.67563"
+     cy="377.76648"
+     r="14.440913"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="okLight6"
+     cx="457.37857"
+     cy="377.76648"
+     r="14.440913"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="okLight7"
+     cx="514.02179"
+     cy="377.76648"
+     r="14.440913"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="okLight8"
+     cx="570.66504"
+     cy="377.76648"
+     r="14.440913"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="okLight9"
+     cx="627.30829"
+     cy="377.76648"
+     r="14.440913"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="okLight10"
+     cx="683.95154"
+     cy="377.76648"
+     r="14.440913"
+     inkscape:label="" />
+  <rect
+     style="display:block;opacity:1;fill:#ff2b31;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="btnR"
+     width="61.971832"
+     height="38.028168"
+     x="465.3551"
+     y="249.82312"
+     inkscape:label="" />
+  <rect
+     style="display:block;opacity:1;fill:#ffb71c;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="btnY"
+     width="61.971832"
+     height="38.028168"
+     x="614.99908"
+     y="249.82312"
+     inkscape:label="" />
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:16px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
+     x="87.641403"
+     y="465.05215"
+     id="text1101"><tspan
+       sodipodi:role="line"
+       id="tspan1099"
+       x="87.641403"
+       y="465.05215">Sequence correcte :</tspan></text>
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:0.61671895;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="sequence1"
+     cx="97.351669"
+     cy="496.42383"
+     r="8.9059849"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:0.61671895;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="sequence2"
+     cx="133.00127"
+     cy="496.42383"
+     r="8.9059849"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:0.61671895;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="sequence3"
+     cx="168.65085"
+     cy="496.42383"
+     r="8.9059849"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:0.61671895;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="sequence4"
+     cx="204.30045"
+     cy="496.42383"
+     r="8.9059849"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:0.61671895;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="sequence5"
+     cx="239.95004"
+     cy="496.42383"
+     r="8.9059849"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:0.61671895;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="sequence6"
+     cx="275.59964"
+     cy="496.42383"
+     r="8.9059849"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:0.61671895;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="sequence7"
+     cx="311.24921"
+     cy="496.42383"
+     r="8.9059849"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:0.61671895;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="sequence8"
+     cx="346.8988"
+     cy="496.42383"
+     r="8.9059849"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:0.61671895;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="sequence9"
+     cx="382.5484"
+     cy="496.42383"
+     r="8.9059849"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:0.61671895;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="sequence10"
+     cx="418.198"
+     cy="496.42383"
+     r="8.9059849"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:0.61671895;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="sequence11"
+     cx="453.8476"
+     cy="496.42383"
+     r="8.9059849"
+     inkscape:label="" />
+  <circle
+     style="display:block;opacity:1;fill:#037003;fill-opacity:1;stroke:#000000;stroke-width:0.61671895;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="sequence12"
+     cx="489.49719"
+     cy="496.42383"
+     r="8.9059849"
+     inkscape:label="" />
+  <rect
+     style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="LightG"
+     width="33.363487"
+     height="60.253464"
+     x="109.55175"
+     y="129.42543"
+     inkscape:label="#rect864" />
+  <rect
+     style="display:block;opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="LightW"
+     width="33.363487"
+     height="60.253464"
+     x="195.94826"
+     y="129.67441"
+     inkscape:label="#rect864" />
+  <rect
+     style="display:block;opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="LightR"
+     width="33.363487"
+     height="60.253464"
+     x="285.08353"
+     y="126.68662"
+     inkscape:label="#rect864" />
+  <rect
+     style="display:block;opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="LightY"
+     width="33.363487"
+     height="60.253464"
+     x="374.7168"
+     y="125.19274"
+     inkscape:label="#rect864" />
+</svg>
+</body>
+</html>
