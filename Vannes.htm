@@ -11,7 +11,7 @@
 
             const  NETID = ""; // Empty string for local machine;
             const  PORT = "801"; // PLC Runtime port;
-            const  SERVICE_URL = "http://" + window.document.location.hostname + "/TcAdsWebService/TcAdsWebService.dll"; // HTTP path to the target TcAdsWebService;
+            const  SERVICE_URL = "http://" + window.document.location.hostname + "/TcAdsWebService.dll"; // HTTP path to the target TcAdsWebService;
 
             // The TcAdsWebService.Client object for ajax communication with the TcAdsWebService;
             var client = new TcAdsWebService.Client(SERVICE_URL, null, null);
@@ -24,20 +24,20 @@
             var readSymbolValuesData = null; // This variable will store the Base64 encoded binary data string for the read sumcommando;
 
             // Array of symbol names to read;
-            const handlesVarNames = [
-                    ".gati_xValve1",
+			const handlesVarNames = [
+					".gati_xValve1",
                     ".gati_xValve2",
                     ".gati_xValve3",
                     ".gati_xValve4",
                     ".gati_xValve5",
                     ".gati_xValve6",
-                    ".gati_xValve7",
-                    ".gati_xValve8",
-                    ".gati_xValve9",
+					".gati_xValve7",
+					".gati_xValve8",
+					".gati_xValve9",
 					".gatq_xValveLed",
 					"P_Valves.c_aeCorrectSequence"
                 ];
-				
+		
 			const handlesVarSizes = [
 					1,
 					1,
@@ -52,7 +52,7 @@
 					9
 				];
 				
-			const totalPDOSize => handlesVarSizes.reduce((a,b) => a + b, 0)
+			const totalPDOSize = handlesVarSizes.reduce(function(pv, cv) { return pv + parseInt(cv); }, 0);
 				
             var handle_variables = [
 					null,
@@ -72,7 +72,20 @@
             var switchFalseBase64 = null;
 
             // UI Elements;
-			var radioVannes = [
+			var OpenedV = [
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null
+				];
+				
+				
+			var ClosedV = [
 					null,
 					null,
 					null,
@@ -84,7 +97,7 @@
 					null
 				];
 			
-			var radioVannesCorrect = [ 
+			var RightV = [ 
 					null,
 					null,
 					null,
@@ -99,25 +112,35 @@
             window.onload = (function () {
 
                 // Initialize UI Elements;
-                radioVannes[0] = svgROOT.getElementById("radioVanne1");
-				radioVannes[1] = svgROOT.getElementById("radioVanne2");
-				radioVannes[2] = svgROOT.getElementById("radioVanne3");
-				radioVannes[3] = svgROOT.getElementById("radioVanne4");
-				radioVannes[4] = svgROOT.getElementById("radioVanne5");
-				radioVannes[5] = svgROOT.getElementById("radioVanne6");
-				radioVannes[6] = svgROOT.getElementById("radioVanne7");
-				radioVannes[7] = svgROOT.getElementById("radioVanne8");
-				radioVannes[8] = svgROOT.getElementById("radioVanne9");
+                OpenedV[0] = svgROOT.getElementById("OpenedV1");
+				OpenedV[1] = svgROOT.getElementById("OpenedV2");
+				OpenedV[2] = svgROOT.getElementById("OpenedV3");
+				OpenedV[3] = svgROOT.getElementById("OpenedV4");
+				OpenedV[4] = svgROOT.getElementById("OpenedV5");
+				OpenedV[5] = svgROOT.getElementById("OpenedV6");
+				OpenedV[6] = svgROOT.getElementById("OpenedV7");
+				OpenedV[7] = svgROOT.getElementById("OpenedV8");
+				OpenedV[8] = svgROOT.getElementById("OpenedV9");
 				
-				radioVannesCorrect[0] = svgROOT.getElementById("radioVanneCorrect1");
-				radioVannesCorrect[1] = svgROOT.getElementById("radioVanneCorrect2");
-				radioVannesCorrect[2] = svgROOT.getElementById("radioVanneCorrect3");
-				radioVannesCorrect[3] = svgROOT.getElementById("radioVanneCorrect4");
-				radioVannesCorrect[4] = svgROOT.getElementById("radioVanneCorrect5");
-				radioVannesCorrect[5] = svgROOT.getElementById("radioVanneCorrect6");
-				radioVannesCorrect[6] = svgROOT.getElementById("radioVanneCorrect7");
-				radioVannesCorrect[7] = svgROOT.getElementById("radioVanneCorrect8");
-				radioVannesCorrect[8] = svgROOT.getElementById("radioVanneCorrect9");
+				ClosedV[0] = svgROOT.getElementById("ClosedV1");
+				ClosedV[1] = svgROOT.getElementById("ClosedV2");
+				ClosedV[2] = svgROOT.getElementById("ClosedV3");
+				ClosedV[3] = svgROOT.getElementById("ClosedV4");
+				ClosedV[4] = svgROOT.getElementById("ClosedV5");
+				ClosedV[5] = svgROOT.getElementById("ClosedV6");
+				ClosedV[6] = svgROOT.getElementById("ClosedV7");
+				ClosedV[7] = svgROOT.getElementById("ClosedV8");
+				ClosedV[8] = svgROOT.getElementById("ClosedV9");
+				
+				RightV[0] = svgROOT.getElementById("RightV1");
+				RightV[1] = svgROOT.getElementById("RightV2");
+				RightV[2] = svgROOT.getElementById("RightV3");
+				RightV[3] = svgROOT.getElementById("RightV4");
+				RightV[4] = svgROOT.getElementById("RightV5");
+				RightV[5] = svgROOT.getElementById("RightV6");
+				RightV[6] = svgROOT.getElementById("RightV7");
+				RightV[7] = svgROOT.getElementById("RightV8");
+				RightV[8] = svgROOT.getElementById("RightV9");
 				
 
                 // Prepare data for writing to switch variable;
@@ -215,14 +238,14 @@
 
 					
                     // Read handles from TcAdsWebService.DataReader object;
-					for (var i = 0; i < handle_variables.length; i++) {
+					for (var i = 0; i < handlesVarNames.length; i++) {
 						handle_variables[i] = reader.readDWORD();
 					}
 
                     // Create sum commando to read symbol values based on the handle;
                     var readSymbolValuesWriter = new TcAdsWebService.DataWriter();
 					
-					for (var i = 0; i < handle_variables.length; i++) {
+					for (var i = 0; i < handlesVarNames.length; i++) {
 						readSymbolValuesWriter.writeDINT(TcAdsWebService.TcAdsReservedIndexGroups.SymbolValueByHandle); // IndexGroup
 						readSymbolValuesWriter.writeDINT(handle_variables[i]); // IndexOffset = The target handle
 						readSymbolValuesWriter.writeDINT(handlesVarSizes[i]); // Size to read;
@@ -262,7 +285,7 @@
                     PORT,
                     0xF080, // 0xF080 = Read command;
                     handlesVarNames.length, // IndexOffset = Variables count;
-                    totalSize + (handlesVarNames.length * 4), // Length of requested data + 4 byte errorcode per variable;
+                    totalPDOSize + (handlesVarNames.length * 4), // Length of requested data + 4 byte errorcode per variable;
                     readSymbolValuesData,
                     ReadCallback,
                     null,
@@ -307,7 +330,7 @@
 							0,
 						];
 					for (var i = 0; i < Vannes.length; i++) {
-						Vannes[i] = reader.readUSINT();
+						Vannes[i] = reader.readBYTE();
 					}
 					var Led = reader.readBOOL();
 					
@@ -324,21 +347,23 @@
 						];
 					
 					for (var i = 0; i < VannesCorrect.length; i++) {
-						VannesCorrect[i] = reader.readUSINT();
+						VannesCorrect[i] = reader.readBYTE();
 					}
 					
                     // Update UI
 					for (var i = 0; i < Vannes.length; i++) {
-						if (Vannes[i]) {
-							radioVannes[i].style.fill = "#e10000";
+						if (Vannes[i]) {			
+							OpenedV[i].style.opacity = 1;
+							ClosedV[i].style.opacity = 0;
 						} else {
-							radioVannes[i].style.fill = "#00c500";
+							OpenedV[i].style.opacity = 0;
+							ClosedV[i].style.opacity = 1;
 						}
 						
-						if (VannesCorrect[i]) {
-							radioVannesCorrect[i].style.fill = "#e10000";
+						if (VannesCorrect[i] == Vannes[i]) {
+							RightV[i].style.opacity = 1;
 						} else {
-							radioVannesCorrect[i].style.fill = "#00c500";
+							RightV[i].style.opacity = 0;
 						}
 						
 					}
@@ -405,7 +430,7 @@
     </script>
 </head>
 <body>
-    <svg
+<svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -421,7 +446,7 @@
    version="1.1"
    style="display: block;"
    sodipodi:docname="vannes.svg"
-   inkscape:version="0.92.4 (5da689c313, 2019-01-14)">
+   inkscape:version="0.92.3 (2405546, 2018-03-11)">
   <metadata
      id="metadata95">
     <rdf:RDF>
@@ -430,7 +455,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -443,13 +468,13 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="1017"
+     inkscape:window-width="2560"
+     inkscape:window-height="1387"
      id="namedview93"
      showgrid="false"
      inkscape:zoom="1.42"
-     inkscape:cx="415.77839"
-     inkscape:cy="280.3186"
+     inkscape:cx="271.56255"
+     inkscape:cy="304.09118"
      inkscape:window-x="1912"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
@@ -571,26 +596,6 @@
      width="799.7572"
      height="599.56744"
      id="rectBackground" />
-  <g
-     id="gV1"
-     transform="translate(553.96561,1.2565289)">
-    <path
-       inkscape:transform-center-y="18.656474"
-       inkscape:transform-center-x="-40.111338"
-       inkscape:label="#radioVanneCorrect1"
-       id="radioVanneCorrect1"
-       d="m 122.19841,151.52038 a 18.771001,18.771001 0 1 1 -37.542002,0 18.771001,18.771001 0 1 1 37.542002,0 z"
-       stroke-miterlimit="4"
-       inkscape:connector-curvature="0"
-       style="display:block;fill:#00c500;fill-opacity:1;stroke-width:0;stroke-miterlimit:4" />
-    <path
-       inkscape:label="#radioVanne1"
-       id="radioVanne1"
-       d="m 116.44824,151.52038 a 13.020835,13.020835 0 1 1 -26.041668,0 13.020835,13.020835 0 1 1 26.041668,0 z"
-       stroke-miterlimit="4"
-       inkscape:connector-curvature="0"
-       style="fill:#000000;stroke-width:0;stroke-miterlimit:4" />
-  </g>
   <text
      line-height="125%"
      x="42.348625"
@@ -608,167 +613,267 @@
        x="42.348625"
        id="tspan4442"
        style="font-size:48px">118 Au feu ! Vannes</tspan></text>
+  <ellipse
+     r="19.918501"
+     cy="199.26466"
+     cx="-79.549515"
+     id="ellipse891"
+     style="fill:#06f627;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+  <ellipse
+     r="19.918501"
+     cy="199.26466"
+     cx="-79.549515"
+     id="ellipse893"
+     style="fill:#06f627;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+  <path
+     id="path22"
+     style="fill:none;stroke:#231f20;stroke-width:2.25199413;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+     d="M 700.14595,153.12642 H 517.73443 c 0,0 -20.26795,0 -20.26795,20.26795 v 121.60768 c 0,0 0,20.26795 -20.26795,20.26795 H 355.59085 c 0,0 -20.26794,0 -20.26794,-20.26795 v -40.5359 c 0,0 0,-20.26794 -20.26795,-20.26794 H 193.44728 c 0,0 -20.26795,0 -20.26795,20.26794 v 202.67947"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="ccscscscscsc" />
   <g
-     id="gV2"
-     transform="translate(610.50205,166.31948)">
+     id="g24"
+     transform="matrix(2.2519941,0,0,-2.2519941,416.39469,315.27)">
     <path
-       inkscape:transform-center-y="18.656474"
-       inkscape:transform-center-x="-40.111338"
-       inkscape:label="#radioVanneCorrect2"
-       id="radioVanneCorrect2"
-       d="m 71.555026,160.05011 a 18.771,18.771 0 1 1 -37.541998,0 18.771,18.771 0 1 1 37.541998,0 z"
-       stroke-miterlimit="4"
        inkscape:connector-curvature="0"
-       style="display:block;fill:#00c500;fill-opacity:1;stroke-width:0;stroke-miterlimit:4" />
-    <path
-       inkscape:label="#radioVanne2"
-       id="radioVanne2"
-       d="m 65.804862,160.05011 a 13.020835,13.020835 0 1 1 -26.04167,0 13.020835,13.020835 0 1 1 26.04167,0 z"
-       stroke-miterlimit="4"
-       inkscape:connector-curvature="0"
-       style="display:block;fill:#000000;stroke-width:0;stroke-miterlimit:4" />
+       d="m 0,0 v -63 c 0,0 0,-9 9,-9 h 54 c 0,0 9,0 9,9 v 36 c 0,0 0,9 9,9 h 27"
+       style="fill:none;stroke:#231f20;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+       id="path26" />
   </g>
   <g
-     id="gV3"
-     transform="translate(472.06847,32.865527)">
+     id="g28"
+     transform="matrix(2.2519941,0,0,-2.2519941,578.53827,416.60973)">
     <path
-       inkscape:transform-center-y="18.656474"
-       inkscape:transform-center-x="-40.111338"
-       inkscape:label="#radioVanneCorrect3"
-       id="radioVanneCorrect3"
-       d="m 74.542802,200.38508 a 18.771,18.771 0 1 1 -37.541998,0 18.771,18.771 0 1 1 37.541998,0 z"
-       stroke-miterlimit="4"
        inkscape:connector-curvature="0"
-       style="display:block;fill:#00c500;fill-opacity:1;stroke-width:0;stroke-miterlimit:4" />
-    <path
-       inkscape:label="#radioVanne3"
-       id="radioVanne3"
-       d="m 68.792638,200.38508 a 13.020835,13.020835 0 1 1 -26.04167,0 13.020835,13.020835 0 1 1 26.04167,0 z"
-       stroke-miterlimit="4"
-       inkscape:connector-curvature="0"
-       style="display:block;fill:#000000;stroke-width:0;stroke-miterlimit:4" />
+       d="M 0,0 H -36"
+       style="fill:none;stroke:#231f20;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+       id="path30" />
   </g>
   <g
-     id="gV"
-     transform="translate(442.19072,166.31948)"
-     inkscape:label="#gV4">
+     id="g32"
+     transform="matrix(2.2519941,0,0,-2.2519941,578.53827,153.12642)">
     <path
-       inkscape:transform-center-y="18.656474"
-       inkscape:transform-center-x="-40.111338"
-       inkscape:label="#radioVanneCorrect4"
-       id="radioVanneCorrect4"
-       d="m 73.048914,241.46698 a 18.771,18.771 0 1 1 -37.541998,0 18.771,18.771 0 1 1 37.541998,0 z"
-       stroke-miterlimit="4"
        inkscape:connector-curvature="0"
-       style="display:block;fill:#00c500;fill-opacity:1;stroke-width:0;stroke-miterlimit:4" />
-    <path
-       inkscape:label="#radioVanne4"
-       id="radioVanne4"
-       d="m 67.29875,241.46698 a 13.020835,13.020835 0 1 1 -26.04167,0 13.020835,13.020835 0 1 1 26.04167,0 z"
-       stroke-miterlimit="4"
-       inkscape:connector-curvature="0"
-       style="display:block;fill:#000000;stroke-width:0;stroke-miterlimit:4" />
+       d="M 0,0 V -54"
+       style="fill:none;stroke:#231f20;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+       id="path34" />
   </g>
   <g
-     id="gV5"
-     transform="translate(279.85494,-104.57213)">
+     id="g36"
+     transform="matrix(2.2519941,0,0,-2.2519941,213.71524,234.19821)">
     <path
-       inkscape:transform-center-y="18.656474"
-       inkscape:transform-center-x="-40.111338"
-       inkscape:label="#radioVanneCorrect5"
-       id="radioVanneCorrect5"
-       d="m 69.065214,285.78565 a 18.771,18.771 0 1 1 -37.541998,0 18.771,18.771 0 1 1 37.541998,0 z"
-       stroke-miterlimit="4"
        inkscape:connector-curvature="0"
-       style="display:block;fill:#00c500;fill-opacity:1;stroke-width:0;stroke-miterlimit:4" />
-    <path
-       inkscape:label="#radioVanne5"
-       id="radioVanne5"
-       d="m 63.31505,285.78565 a 13.020835,13.020835 0 1 1 -26.04167,0 13.020835,13.020835 0 1 1 26.04167,0 z"
-       stroke-miterlimit="4"
-       inkscape:connector-curvature="0"
-       style="display:block;fill:#000000;stroke-width:0;stroke-miterlimit:4" />
+       d="m 0,0 v 27 c 0,0 0,9 -9,9 h -45"
+       style="fill:none;stroke:#231f20;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+       id="path38" />
   </g>
   <g
-     id="gV6"
-     transform="translate(225.07906,46.808477)">
+     id="g40"
+     transform="matrix(2.2519941,0,0,-2.2519941,254.25113,234.19821)">
     <path
-       inkscape:transform-center-y="18.656474"
-       inkscape:transform-center-x="-40.111338"
-       inkscape:label="#radioVanneCorrect6"
-       id="radioVanneCorrect6"
-       d="m 66.077439,326.61857 a 18.771,18.771 0 1 1 -37.541998,0 18.771,18.771 0 1 1 37.541998,0 z"
-       stroke-miterlimit="4"
        inkscape:connector-curvature="0"
-       style="display:block;fill:#00c500;fill-opacity:1;stroke-width:0;stroke-miterlimit:4" />
-    <path
-       inkscape:label="#radioVanne6"
-       id="radioVanne6"
-       d="m 60.327275,326.61857 a 13.020835,13.020835 0 1 1 -26.04167,0 13.020835,13.020835 0 1 1 26.04167,0 z"
-       stroke-miterlimit="4"
-       inkscape:connector-curvature="0"
-       style="display:block;fill:#000000;stroke-width:0;stroke-miterlimit:4" />
+       d="m 0,0 v -90 c 0,0 0,-9 9,-9 h 27"
+       style="fill:none;stroke:#231f20;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+       id="path42" />
   </g>
   <g
-     id="gV7"
-     transform="translate(244.00164,78.678079)">
+     id="g44"
+     transform="matrix(2.2519941,0,0,-2.2519941,254.25113,376.07384)">
     <path
-       inkscape:transform-center-y="18.656474"
-       inkscape:transform-center-x="-40.111338"
-       inkscape:label="#radioVanneCorrect7"
-       id="radioVanneCorrect7"
-       d="m 65.081514,371.68418 a 18.771,18.771 0 1 1 -37.541998,0 18.771,18.771 0 1 1 37.541998,0 z"
-       stroke-miterlimit="4"
        inkscape:connector-curvature="0"
-       style="display:block;fill:#00c500;fill-opacity:1;stroke-width:0;stroke-miterlimit:4" />
-    <path
-       inkscape:label="#radioVanne7"
-       id="radioVanne7"
-       d="m 59.331352,371.68418 a 13.020838,13.020838 0 1 1 -26.041675,0 13.020838,13.020838 0 1 1 26.041675,0 z"
-       stroke-miterlimit="4"
-       inkscape:connector-curvature="0"
-       style="display:block;fill:#000000;stroke-width:0;stroke-miterlimit:4" />
+       d="M 0,0 H 18"
+       style="fill:none;stroke:#231f20;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+       id="path46" />
   </g>
   <g
-     id="gV8"
-     transform="translate(54.775877,-263.92014)">
+     id="g48"
+     transform="matrix(2.2519941,0,0,-2.2519941,375.8588,315.27)">
     <path
-       inkscape:transform-center-y="18.656474"
-       inkscape:transform-center-x="-40.111338"
-       inkscape:label="#radioVanneCorrect8"
-       id="radioVanneCorrect8"
-       d="m 67.073364,422.22738 a 18.771,18.771 0 1 1 -37.541998,0 18.771,18.771 0 1 1 37.541998,0 z"
-       stroke-miterlimit="4"
        inkscape:connector-curvature="0"
-       style="display:block;fill:#00c500;fill-opacity:1;stroke-width:0;stroke-miterlimit:4" />
-    <path
-       inkscape:label="#radioVanne8"
-       id="radioVanne8"
-       d="m 61.3232,422.22738 a 13.020835,13.020835 0 1 1 -26.04167,0 13.020835,13.020835 0 1 1 26.04167,0 z"
-       stroke-miterlimit="4"
-       inkscape:connector-curvature="0"
-       style="display:block;fill:#000000;stroke-width:0;stroke-miterlimit:4;fill-opacity:1" />
+       d="M 0,0 V 54"
+       style="fill:none;stroke:#231f20;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+       id="path50" />
   </g>
   <g
-     id="gV9"
-     transform="translate(32.865526,-148.39283)">
+     id="g112"
+     transform="matrix(2.2519941,0,0,-2.2519941,173.17935,295.00205)">
     <path
-       inkscape:transform-center-y="18.656474"
-       inkscape:transform-center-x="-40.111338"
-       inkscape:label="#radioVanneCorrect9"
-       id="radioVanneCorrect9"
-       d="m 90.936403,466.44616 a 18.771,18.771 0 1 1 -37.541998,0 18.771,18.771 0 1 1 37.541998,0 z"
-       stroke-miterlimit="4"
        inkscape:connector-curvature="0"
-       style="display:block;fill:#00c500;fill-opacity:1;stroke-width:0;stroke-miterlimit:4" />
-    <path
-       inkscape:label="#radioVanne9"
-       id="radioVanne9"
-       d="m 85.186239,466.44616 a 13.020835,13.020835 0 1 1 -26.04167,0 13.020835,13.020835 0 1 1 26.04167,0 z"
-       stroke-miterlimit="4"
-       inkscape:connector-curvature="0"
-       style="display:block;fill:#000000;stroke-width:0;stroke-miterlimit:4" />
+       d="M 0,0 H -27"
+       style="fill:none;stroke:#231f20;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+       id="path114" />
   </g>
+  <path
+     style="fill:#ff919a;fill-opacity:1;stroke:#000000;stroke-width:0.64913511;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 674.00681,138.18684 15.15086,15.15086 -15.15086,15.15085 10.1013,10.1013 15.15088,-15.15084 15.15308,15.15308 10.10129,-10.10129 -15.15308,-15.1531 15.15308,-15.15308 -10.1013,-10.10131 -15.15309,15.15309 -15.15087,-15.15085 z"
+     id="ClosedV1"
+     inkscape:connector-curvature="0"
+     inkscape:label="" />
+  <path
+     style="fill:#06f627;fill-opacity:1;stroke:#000000;stroke-width:0.78657722;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 699.26009,127.78161 a 25.556479,25.556479 0 0 0 -25.5561,25.55609 25.556479,25.556479 0 0 0 25.5561,25.55608 25.556479,25.556479 0 0 0 25.55609,-25.55608 25.556479,25.556479 0 0 0 -25.55609,-25.55609 z m 0,8.35739 a 17.198162,17.198162 0 0 1 17.19871,17.1987 17.198162,17.198162 0 0 1 -17.19871,17.19869 17.198162,17.198162 0 0 1 -17.1987,-17.19869 17.198162,17.198162 0 0 1 17.1987,-17.1987 z"
+     id="OpenedV1"
+     inkscape:connector-curvature="0"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#ff919a;fill-opacity:1;stroke:#000000;stroke-width:0.64913511;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 634.0491,340.84751 15.15086,15.15086 -15.15086,15.15085 10.1013,10.1013 15.15088,-15.15084 15.15308,15.15308 10.10129,-10.10129 -15.15308,-15.1531 15.15308,-15.15308 -10.1013,-10.10131 -15.15309,15.15309 -15.15087,-15.15085 z"
+     id="ClosedV2"
+     inkscape:connector-curvature="0"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#06f627;fill-opacity:1;stroke:#000000;stroke-width:0.78657722;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 659.30238,330.44228 a 25.556479,25.556479 0 0 0 -25.5561,25.55609 25.556479,25.556479 0 0 0 25.5561,25.55608 25.556479,25.556479 0 0 0 25.55609,-25.55608 25.556479,25.556479 0 0 0 -25.55609,-25.55609 z m 0,8.35739 a 17.198162,17.198162 0 0 1 17.19871,17.1987 17.198162,17.198162 0 0 1 -17.19871,17.19869 17.198162,17.198162 0 0 1 -17.1987,-17.19869 17.198162,17.198162 0 0 1 17.1987,-17.1987 z"
+     id="OpenedV2"
+     inkscape:connector-curvature="0"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#ff919a;fill-opacity:1;stroke:#000000;stroke-width:0.64913511;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 553.87714,258.68369 15.15086,15.15086 -15.15086,15.15085 10.1013,10.1013 15.15088,-15.15084 15.15308,15.15308 10.10129,-10.10129 -15.15308,-15.1531 15.15308,-15.15308 -10.1013,-10.10131 -15.15309,15.15309 -15.15087,-15.15085 z"
+     id="ClosedV3"
+     inkscape:connector-curvature="0"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#06f627;fill-opacity:1;stroke:#000000;stroke-width:0.78657722;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 579.13042,248.27846 a 25.556479,25.556479 0 0 0 -25.5561,25.55609 25.556479,25.556479 0 0 0 25.5561,25.55608 25.556479,25.556479 0 0 0 25.55609,-25.55608 25.556479,25.556479 0 0 0 -25.55609,-25.55609 z m 0,8.35739 a 17.198162,17.198162 0 0 1 17.19871,17.1987 17.198162,17.198162 0 0 1 -17.19871,17.19869 17.198162,17.198162 0 0 1 -17.1987,-17.19869 17.198162,17.198162 0 0 1 17.1987,-17.1987 z"
+     id="OpenedV3"
+     inkscape:connector-curvature="0"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#ff919a;fill-opacity:1;stroke:#000000;stroke-width:0.64913511;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 473.70517,401.59894 15.15086,15.15086 -15.15086,15.15085 10.1013,10.1013 15.15088,-15.15084 15.15308,15.15308 10.10129,-10.10129 -15.15308,-15.1531 15.15308,-15.15308 -10.1013,-10.10131 -15.15309,15.15309 -15.15087,-15.15085 z"
+     id="ClosedV4"
+     inkscape:connector-curvature="0"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#06f627;fill-opacity:1;stroke:#000000;stroke-width:0.78657722;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 498.95845,391.19371 a 25.556479,25.556479 0 0 0 -25.5561,25.55609 25.556479,25.556479 0 0 0 25.5561,25.55608 25.556479,25.556479 0 0 0 25.55609,-25.55608 25.556479,25.556479 0 0 0 -25.55609,-25.55609 z m 0,8.35739 a 17.198162,17.198162 0 0 1 17.19871,17.1987 17.198162,17.198162 0 0 1 -17.19871,17.19869 17.198162,17.198162 0 0 1 -17.1987,-17.19869 17.198162,17.198162 0 0 1 17.1987,-17.1987 z"
+     id="OpenedV4"
+     inkscape:connector-curvature="0"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#ff919a;fill-opacity:1;stroke:#000000;stroke-width:0.64913511;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 350.70843,179.00969 15.15086,15.15086 -15.15086,15.15085 10.1013,10.1013 15.15088,-15.15084 15.15308,15.15308 10.10129,-10.10129 -15.15308,-15.1531 15.15308,-15.15308 -10.1013,-10.10131 -15.15309,15.15309 -15.15087,-15.15085 z"
+     id="ClosedV5"
+     inkscape:connector-curvature="0"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#06f627;fill-opacity:1;stroke:#000000;stroke-width:0.78657722;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 375.96171,168.60446 a 25.556479,25.556479 0 0 0 -25.5561,25.55609 25.556479,25.556479 0 0 0 25.5561,25.55608 25.556479,25.556479 0 0 0 25.55609,-25.55608 25.556479,25.556479 0 0 0 -25.55609,-25.55609 z m 0,8.35739 a 17.198162,17.198162 0 0 1 17.19871,17.1987 17.198162,17.198162 0 0 1 -17.19871,17.19869 17.198162,17.198162 0 0 1 -17.1987,-17.19869 17.198162,17.198162 0 0 1 17.1987,-17.1987 z"
+     id="OpenedV5"
+     inkscape:connector-curvature="0"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#ff919a;fill-opacity:1;stroke:#000000;stroke-width:0.64913511;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 310.37346,441.9339 15.15087,15.15086 -15.15087,15.15085 10.10131,10.1013 15.15088,-15.15084 15.15308,15.15308 10.10129,-10.10129 -15.15308,-15.1531 15.15308,-15.15308 -10.1013,-10.10131 -15.15309,15.15309 -15.15087,-15.15085 z"
+     id="ClosedV6"
+     inkscape:connector-curvature="0"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#06f627;fill-opacity:1;stroke:#000000;stroke-width:0.78657722;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 335.62675,431.52867 a 25.556479,25.556479 0 0 0 -25.55611,25.55609 25.556479,25.556479 0 0 0 25.55611,25.55608 25.556479,25.556479 0 0 0 25.55609,-25.55608 25.556479,25.556479 0 0 0 -25.55609,-25.55609 z m 0,8.35739 a 17.198162,17.198162 0 0 1 17.19871,17.1987 17.198162,17.198162 0 0 1 -17.19871,17.19869 17.198162,17.198162 0 0 1 -17.19871,-17.19869 17.198162,17.198162 0 0 1 17.19871,-17.1987 z"
+     id="OpenedV6"
+     inkscape:connector-curvature="0"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#ff919a;fill-opacity:1;stroke:#000000;stroke-width:0.64913511;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 269.54054,361.26397 15.15086,15.15086 -15.15086,15.15085 10.1013,10.1013 15.15088,-15.15084 15.15308,15.15308 10.10129,-10.10129 -15.15308,-15.1531 15.15308,-15.15308 -10.1013,-10.10131 -15.15309,15.15309 -15.15087,-15.15085 z"
+     id="ClosedV7"
+     inkscape:connector-curvature="0"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#06f627;fill-opacity:1;stroke:#000000;stroke-width:0.78657722;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 294.79382,350.85874 a 25.556479,25.556479 0 0 0 -25.5561,25.55609 25.556479,25.556479 0 0 0 25.5561,25.55608 25.556479,25.556479 0 0 0 25.55609,-25.55608 25.556479,25.556479 0 0 0 -25.55609,-25.55609 z m 0,8.35739 a 17.198162,17.198162 0 0 1 17.19871,17.1987 17.198162,17.198162 0 0 1 -17.19871,17.19869 17.198162,17.198162 0 0 1 -17.1987,-17.19869 17.198162,17.198162 0 0 1 17.1987,-17.1987 z"
+     id="OpenedV7"
+     inkscape:connector-curvature="0"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#ff919a;fill-opacity:1;stroke:#000000;stroke-width:0.64913511;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 88.28218,280.09608 15.15086,15.15086 -15.15086,15.15085 10.1013,10.1013 15.15088,-15.15084 15.15308,15.15308 10.10129,-10.10129 -15.15308,-15.1531 15.15308,-15.15308 -10.1013,-10.10131 -15.15309,15.15309 -15.15087,-15.15085 z"
+     id="ClosedV8"
+     inkscape:connector-curvature="0"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#06f627;fill-opacity:1;stroke:#000000;stroke-width:0.78657722;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 113.53546,269.69085 a 25.556479,25.556479 0 0 0 -25.5561,25.55609 25.556479,25.556479 0 0 0 25.5561,25.55608 25.556479,25.556479 0 0 0 25.55609,-25.55608 25.556479,25.556479 0 0 0 -25.55609,-25.55609 z m 0,8.35739 a 17.198162,17.198162 0 0 1 17.19871,17.1987 17.198162,17.198162 0 0 1 -17.19871,17.19869 17.198162,17.198162 0 0 1 -17.1987,-17.19869 17.198162,17.198162 0 0 1 17.1987,-17.1987 z"
+     id="OpenedV8"
+     inkscape:connector-curvature="0"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#ff919a;fill-opacity:1;stroke:#000000;stroke-width:0.64913511;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 67.367754,138.67473 15.15086,15.15086 -15.15086,15.15085 10.1013,10.1013 15.15088,-15.15084 15.153076,15.15308 10.10129,-10.10129 -15.15308,-15.1531 15.15308,-15.15308 -10.1013,-10.10131 -15.153086,15.15309 -15.15087,-15.15085 z"
+     id="ClosedV9"
+     inkscape:connector-curvature="0"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#06f627;fill-opacity:1;stroke:#000000;stroke-width:0.78657722;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 92.621034,128.2695 a 25.556479,25.556479 0 0 0 -25.5561,25.55609 25.556479,25.556479 0 0 0 25.5561,25.55608 25.556479,25.556479 0 0 0 25.556086,-25.55608 25.556479,25.556479 0 0 0 -25.556086,-25.55609 z m 0,8.35738 a 17.198162,17.198162 0 0 1 17.198706,17.19871 17.198162,17.198162 0 0 1 -17.198706,17.19869 17.198162,17.198162 0 0 1 -17.1987,-17.19869 17.198162,17.198162 0 0 1 17.1987,-17.19871 z"
+     id="OpenedV9"
+     inkscape:connector-curvature="0"
+     inkscape:label="" />
+  <path
+     style="fill:#06f627;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.69135827px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 130.15269,166.94692 -7.4248,18.62286 -5.59903,-7.30308 -2.6778,3.16466 9.494,10.22432 12.65868,-24.58704 z"
+     id="RightV9"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="ccccccc"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#06f627;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.69135827px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 149.98058,309.16155 -7.4248,18.62286 -5.59903,-7.30308 -2.6778,3.16466 9.494,10.22432 12.65868,-24.58704 z"
+     id="RightV8"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="ccccccc"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#06f627;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.69135827px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 340.70024,365.92927 -7.4248,18.62286 -5.59903,-7.30308 -2.6778,3.16466 9.494,10.22432 12.65868,-24.58704 z"
+     id="RightV7"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="ccccccc"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#06f627;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.69135827px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 382.03112,446.10124 -7.4248,18.62286 -5.59903,-7.30308 -2.6778,3.16466 9.494,10.22432 12.65868,-24.58704 z"
+     id="RightV6"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="ccccccc"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#06f627;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.69135827px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 422.77861,185.78767 -7.4248,18.62286 -5.59903,-7.30308 -2.6778,3.16466 9.494,10.22432 12.65868,-24.58704 z"
+     id="RightV5"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="ccccccc"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#06f627;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.69135827px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 543.86894,423.19496 -7.4248,18.62286 -5.59903,-7.30308 -2.6778,3.16466 9.494,10.22432 12.65868,-24.58704 z"
+     id="RightV4"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="ccccccc"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#06f627;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.69135827px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 625.2077,262.26763 -7.4248,18.62286 -5.59903,-7.30308 -2.6778,3.16466 9.494,10.22432 12.65868,-24.58704 z"
+     id="RightV3"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="ccccccc"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#06f627;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.69135827px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 705.17341,343.69184 -7.4248,18.62286 -5.59903,-7.30308 -2.6778,3.16466 9.494,10.22432 12.65868,-24.58704 z"
+     id="RightV2"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="ccccccc"
+     inkscape:label="" />
+  <path
+     style="display:block;fill:#06f627;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.69135827px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 744.71637,143.1564 -7.4248,18.62286 -5.59903,-7.30308 -2.6778,3.16466 9.494,10.22432 12.65868,-24.58704 z"
+     id="RightV1"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="ccccccc"
+     inkscape:label="" />
 </svg>
 </body>
 </html>
