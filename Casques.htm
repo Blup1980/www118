@@ -305,12 +305,16 @@
 							switch(CasquesPDO[i]) {
 								case CasquePDOCorrect[0] :
 									Casques[i].style.fill = "#e10000";
+									break;
 								case CasquePDOCorrect[1] :
 									Casques[i].style.fill = "#00e100";
+									break;
 								case CasquePDOCorrect[2] :
 									Casques[i].style.fill = "#0000e1";
+									break;
 								case CasquePDOCorrect[3] :
-									Casques[i].style.fill = "#e1e1e1";		
+									Casques[i].style.fill = "#e1e1e1";
+									break;									
 							}
 							Casques[i].style.opacity = 1;
 						} else {
@@ -332,7 +336,8 @@
 					var furnitureX = ratio * finalX;
 					var furnitureY = ratio * finalY;
 					
-					var test = CasisersAmovibles.transform.translate;
+					CasisersAmovibles.setAttribute('transform','translate(30,100)');
+										
 					
                 } else {
 
