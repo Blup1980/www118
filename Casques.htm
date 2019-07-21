@@ -304,13 +304,13 @@
 						if (CasquesPDO[i]) {
 							switch(CasquesPDO[i]) {
 								case CasquePDOCorrect[0] :
-									Casques[i].style.fill = 0xFF0000;
+									Casques[i].style.fill = "#e10000";
 								case CasquePDOCorrect[1] :
-									Casques[i].style.fill = 0x00FF00;
+									Casques[i].style.fill = "#00e100";
 								case CasquePDOCorrect[2] :
-									Casques[i].style.fill = 0x0000FF;
+									Casques[i].style.fill = "#0000e1";
 								case CasquePDOCorrect[3] :
-									Casques[i].style.fill = 0x000000;		
+									Casques[i].style.fill = "#e1e1e1";		
 							}
 							Casques[i].style.opacity = 1;
 						} else {
@@ -323,6 +323,16 @@
 							RightCasques[i].style.opacity = 0;
 						}				
 					}
+					
+					// compute position of the furniture
+					var ratio = 0;
+					if (TargetPositionPDO)
+						ratio = CurrentPositionPDO / TargetPositionPDO;
+						
+					var furnitureX = ratio * finalX;
+					var furnitureY = ratio * finalY;
+					
+					var test = CasisersAmovibles.transform.translate;
 					
                 } else {
 
