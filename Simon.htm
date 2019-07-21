@@ -488,7 +488,35 @@
 					} else {
 						UIFingerY.style.opacity = 0;
 					}
-
+					
+					for (var i = 0; i < CorrectLed.length; i++) {
+						if (CorrectLed[i]) {}		
+							UIResult.style.fill = "#11f911"
+						} else {
+							UIResult.style.fill = "#037003"
+						}
+					}
+					
+					for (var i = 0; i < CorrectSequence.length; i++) {
+						switch(CorrectSequence[i]) 
+						{	
+						case 0: // red
+							UICorrect[i].style.fill = "#ff2b31"
+							break;
+						case 1: // green
+							UICorrect[i].style.fill = "#11f911"
+							break;
+							
+						case 2: // yellow
+							UICorrect[i].style.fill = "#ffb516"
+							break;
+							
+						case 3: // White
+							UICorrect[i].style.fill = "#f6f6f6"
+							break;
+					
+						}
+					}
 
 
                 } else {
