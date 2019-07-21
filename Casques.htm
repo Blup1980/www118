@@ -22,42 +22,34 @@
             const  readLoopDelay = 200;
 
             var readSymbolValuesData = null; // This variable will store the Base64 encoded binary data string for the read sumcommando;
+			
+			const finalX = -34.325253;
+			const finalY = -20.039778;
 
             // Array of symbol names to read;
 			const handlesVarNames = [
-					".gati_xValve1",
-                    ".gati_xValve2",
-                    ".gati_xValve3",
-                    ".gati_xValve4",
-                    ".gati_xValve5",
-                    ".gati_xValve6",
-					".gati_xValve7",
-					".gati_xValve8",
-					".gati_xValve9",
-					".gatq_xValveLed",
-					"P_Valves.c_aeCorrectSequence"
+					".gati_uHelmet1ID",
+                    ".gati_uHelmet2ID",
+                    ".gati_uHelmet3ID",
+					".gati_uHelmet4ID",
+					"P_Helmets.c_auCorrectSequence",
+                    "P_Helmets.c_uTargetPosition",
+                    ".gati_uHelmetMotorPosition"
                 ];
 		
 			const handlesVarSizes = [
-					1,
-					1,
-					1,
-					1,
-					1,
-					1,
-					1,
-					1,
-					1,
-					1,
-					9
+					4,
+					4,
+					4,
+					4,
+					4*4,
+					4,
+					4
 				];
 				
 			const totalPDOSize = handlesVarSizes.reduce(function(pv, cv) { return pv + parseInt(cv); }, 0);
 				
             var handle_variables = [
-					null,
-					null,
-					null,
 					null,
 					null,
 					null,
@@ -282,54 +274,54 @@
                     }
 
                     // READ Symbol data from TcAdsWebService.DataReader object;
-					var Vannes = [
+					var CasquesPDO = [
 							0,
 							0,
 							0,
-							0,
-							0,
-							0,
-							0,
-							0,
-							0,
+							0
 						];
-					for (var i = 0; i < Vannes.length; i++) {
-						Vannes[i] = reader.readBYTE();
+					for (var i = 0; i < CasquesPDO.length; i++) {
+						CasquesPDO[i] = reader.readDINT();
 					}
-					var Led = reader.readBOOL();
 					
-					var VannesCorrect = [
+					var CasquePDOCorrect = [
 							0,
 							0,
 							0,
-							0,
-							0,
-							0,
-							0,
-							0,
-							0,
+							0
 						];
 					
-					for (var i = 0; i < VannesCorrect.length; i++) {
-						VannesCorrect[i] = reader.readBYTE();
+					for (var i = 0; i < CasquePDOCorrect.length; i++) {
+						CasquePDOCorrect[i] = reader.readDINT();
 					}
+					
+					var TargetPositionPDO = reader.readDINT();
+					var CurrentPositionPDO = reader.readDINT();
+					
 					
                     // Update UI
-					for (var i = 0; i < Vannes.length; i++) {
-						if (Vannes[i]) {			
-							OpenedV[i].style.opacity = 1;
-							ClosedV[i].style.opacity = 0;
+					for (var i = 0; i < CasquesPDO.length; i++) {
+						if (CasquesPDO[i]) {
+							switch(CasquesPDO[i]) {
+								case CasquePDOCorrect[0] :
+									Casques[i].style.fill = 0xFF0000;
+								case CasquePDOCorrect[1] :
+									Casques[i].style.fill = 0x00FF00;
+								case CasquePDOCorrect[2] :
+									Casques[i].style.fill = 0x0000FF;
+								case CasquePDOCorrect[3] :
+									Casques[i].style.fill = 0x000000;		
+							}
+							Casques[i].style.opacity = 1;
 						} else {
-							OpenedV[i].style.opacity = 0;
-							ClosedV[i].style.opacity = 1;
+							Casques[i].style.opacity = 0;
 						}
 						
-						if (VannesCorrect[i] == Vannes[i]) {
-							RightV[i].style.opacity = 1;
+						if (CasquePDOCorrect[i] == CasquesPDO[i]) {
+							RightCasques[i].style.opacity = 1;
 						} else {
-							RightV[i].style.opacity = 0;
-						}
-						
+							RightCasques[i].style.opacity = 0;
+						}				
 					}
 					
                 } else {
@@ -407,7 +399,7 @@
    height="158.63556mm"
    viewBox="0 0 211.60243 158.63556"
    version="1.1"
-   id="svg8"
+   id="svgROOT"
    inkscape:version="0.92.3 (2405546, 2018-03-11)"
    sodipodi:docname="casiers.svg">
   <defs
