@@ -34,7 +34,8 @@
 					".gati_uHelmet4ID",
 					"P_Helmets.c_auCorrectSequence",
                     "P_Helmets.c_uTargetPosition",
-                    ".gati_uHelmetMotorPosition"
+                    ".gati_uHelmetMotorPosition",
+					".gat_xHelmetsSolved"
                 ];
 		
 			const handlesVarSizes = [
@@ -44,12 +45,14 @@
 					4,
 					4*4,
 					4,
-					4
+					4,
+					1
 				];
 				
 			const totalPDOSize = handlesVarSizes.reduce(function(pv, cv) { return pv + parseInt(cv); }, 0);
 				
             var handle_variables = [
+					null,
 					null,
 					null,
 					null,
@@ -81,6 +84,8 @@
 					null,
 					null
 				];
+				
+			var TextFinished = null;
 			
             // Occurs if the window has loaded;
             window.onload = (function () {
@@ -98,6 +103,7 @@
 				RightCasques[2] = svgROOT.getElementById("RightCasque3");
 				RightCasques[3] = svgROOT.getElementById("RightCasque4");
 				
+				TextFinished = svgROOT.getElementById("tFinished");
 
                 // Prepare data for writing to switch variable;
                 var switchTrueBase64Writer = new TcAdsWebService.DataWriter();
@@ -298,22 +304,23 @@
 					var TargetPositionPDO = reader.readDINT();
 					var CurrentPositionPDO = reader.readDINT();
 					
+					var isFinished = reader.readBOOL();
 					
                     // Update UI
 					for (var i = 0; i < CasquesPDO.length; i++) {
 						if (CasquesPDO[i]) {
 							switch(CasquesPDO[i]) {
 								case CasquePDOCorrect[0] :
-									Casques[i].style.fill = "#ffd700";
+									Casques[i].style.fill = "#e1e1e1";
 									break;
 								case CasquePDOCorrect[1] :
-									Casques[i].style.fill = "#e10000";
-									break;
-								case CasquePDOCorrect[2] :
 									Casques[i].style.fill = "#000000";
 									break;
+								case CasquePDOCorrect[2] :
+									Casques[i].style.fill = "#e10000";
+									break;
 								case CasquePDOCorrect[3] :
-									Casques[i].style.fill = "#e1e1e1";
+									Casques[i].style.fill = "#ffd700";
 									break;									
 							}
 							Casques[i].style.opacity = 1;
@@ -337,7 +344,12 @@
 					var furnitureY = ratio * finalY;
 					
 					CasisersAmovibles.setAttribute('transform','translate(' + furnitureX + ',' + furnitureY + ')');
-										
+						
+					if (isFinished) {
+						TextFinished.style.opacity = 1;
+					} else {
+						TextFinished.style.opacity = 0;
+					}						
 					
                 } else {
 
@@ -415,7 +427,7 @@
    viewBox="0 0 211.60243 158.63556"
    version="1.1"
    id="svgROOT"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    sodipodi:docname="casiers.svg">
   <defs
      id="defs2">
@@ -454,14 +466,14 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.979899"
-     inkscape:cx="388.42105"
-     inkscape:cy="273.67487"
+     inkscape:cx="641.72808"
+     inkscape:cy="481.93641"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="2560"
-     inkscape:window-height="1387"
-     inkscape:window-x="1912"
+     inkscape:window-width="1366"
+     inkscape:window-height="706"
+     inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      fit-margin-top="0"
@@ -478,7 +490,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -610,7 +622,6 @@
        inkscape:label="" />
     <g
        id="gCasiersAmovibles"
-	   transform="translate(0.0,0.0)">
        inkscape:label="">
       <g
          id="g960-9"
@@ -737,6 +748,18 @@
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="ccccccc"
        inkscape:label="" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:block;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-2.008734"
+       y="138.59622"
+       id="tFinished"
+       inkscape:label=""><tspan
+         sodipodi:role="line"
+         id="tspan4619"
+         x="-2.008734"
+         y="138.59622"
+         style="stroke-width:0.26458332">Terminé</tspan></text>
   </g>
 </svg>
 </body>
