@@ -29,7 +29,7 @@
          id="stop5131" />
     </linearGradient>
     <linearGradient
-       gradientTransform="matrix(0.26458333,0,0,0.26458333,-155.85857,111.19455)"
+       gradientTransform="matrix(0.26458333,0,0,0.26458333,-156.04756,107.50928)"
        id="linearGradient3777"
        y2="300.21609"
        xlink:href="#linearGradient4227"
@@ -243,11 +243,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.9899495"
-     inkscape:cx="206.34802"
-     inkscape:cy="255.80545"
+     inkscape:zoom="2.8"
+     inkscape:cx="486.64024"
+     inkscape:cy="314.18321"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer1-0"
+     inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1366"
      inkscape:window-height="706"
@@ -281,8 +281,8 @@
      style="display:inline">
     <rect
        style="display:block;fill:url(#linearGradient3777);fill-opacity:1;stroke-width:0.26458332"
-       x="-155.78062"
-       y="111.30894"
+       x="-155.96962"
+       y="107.62367"
        width="211.60243"
        height="158.63556"
        id="rectBackground" />
@@ -306,142 +306,122 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="-22.680399"
-       y="130.96434"
+       x="-29.629406"
+       y="126.68803"
        id="timer"
        inkscape:label=""><tspan
          sodipodi:role="line"
          id="tspan61"
-         x="-22.680399"
-         y="130.96434"
+         x="-29.629406"
+         y="126.68803"
          style="stroke-width:0.26458332">Time : </tspan></text>
-    <g
-       id="g5173"
-       transform="translate(117.06405,-16.036172)">
-      <text
-         id="text67"
-         y="158.4716"
-         x="-136.64243"
-         style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-         xml:space="preserve"><tspan
-           style="stroke-width:0.26458332"
-           y="158.4716"
-           x="-136.64243"
-           id="tspan65"
-           sodipodi:role="line">Simon</tspan></text>
-      <rect
-         y="151.58614"
-         x="-145.22348"
-         height="5.8799295"
-         width="6.1471992"
-         id="SimonBtn"
-         style="fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
-         inkscape:label="" />
-    </g>
-    <g
-       id="g5178"
-       transform="translate(-0.80180857,21.833997)">
-      <text
-         id="text71"
-         y="177.98227"
-         x="-136.02747"
-         style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-         xml:space="preserve"><tspan
-           style="stroke-width:0.26458332"
-           y="177.98227"
-           x="-136.02747"
-           id="tspan69"
-           sodipodi:role="line">Vannes</tspan></text>
-      <rect
-         y="171.25958"
-         x="-145.22348"
-         height="5.8799295"
-         width="6.1471992"
-         id="VanneBtn"
-         style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
-         inkscape:label="" />
-    </g>
-    <g
-       id="g5183"
-       transform="translate(-1.069078,-57.351325)">
-      <text
-         id="text75"
-         y="198.02748"
-         x="-136.53906"
-         style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-         xml:space="preserve"><tspan
-           style="stroke-width:0.26458332"
-           y="198.02748"
-           x="-136.53906"
-           id="tspan73"
-           sodipodi:role="line">Casques</tspan></text>
-      <rect
-         y="192.26082"
-         x="-145.22348"
-         height="5.8799295"
-         width="6.1471992"
-         id="CasqueBtn"
-         style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
-         inkscape:label="" />
-    </g>
-    <g
-       id="g5188"
-       transform="translate(111.71866,-20.294458)">
-      <text
-         id="text79"
-         y="220.21086"
-         x="-136.98349"
-         style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-         xml:space="preserve"><tspan
-           style="stroke-width:0.26458332"
-           y="220.21086"
-           x="-136.98349"
-           id="tspan77"
-           sodipodi:role="line">Disjoncteurs</tspan></text>
-      <rect
-         y="214.35118"
-         x="-145.22348"
-         height="5.8799295"
-         width="6.1471992"
-         id="DisjoncteurBtn"
-         style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
-         inkscape:label="" />
-    </g>
-    <g
-       id="g5193"
-       transform="translate(112.52047,6.9490077)">
-      <text
-         id="text83"
-         y="242.39423"
-         x="-136.53906"
-         style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-         xml:space="preserve"><tspan
-           style="stroke-width:0.26458332"
-           y="242.39423"
-           x="-136.53906"
-           id="tspan81"
-           sodipodi:role="line">Clés</tspan></text>
-      <rect
-         y="235.29689"
-         x="-145.22348"
-         height="5.8799295"
-         width="6.1471992"
-         id="CleBtn"
-         style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
-         inkscape:label="" />
-    </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-19.578375"
+       y="141.90857"
+       id="text67"><tspan
+         sodipodi:role="line"
+         id="tspan65"
+         x="-19.578375"
+         y="141.90857"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Simon</tspan></text>
+    <rect
+       inkscape:label=""
+       style="fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
+       id="SimonBtn"
+       width="6.1471992"
+       height="5.8799295"
+       x="-28.15943"
+       y="136.33827" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-136.82927"
+       y="199.29791"
+       id="text71"><tspan
+         sodipodi:role="line"
+         id="tspan69"
+         x="-136.82927"
+         y="199.29791"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Vannes</tspan></text>
+    <rect
+       inkscape:label=""
+       style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
+       id="ValveBtn"
+       width="6.1471992"
+       height="5.8799295"
+       x="-146.02528"
+       y="193.83614" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-137.60814"
+       y="140.4111"
+       id="text75"><tspan
+         sodipodi:role="line"
+         id="tspan73"
+         x="-137.60814"
+         y="140.4111"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Casques</tspan></text>
+    <rect
+       inkscape:label=""
+       style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
+       id="CasqueBtn"
+       width="6.1471992"
+       height="5.8799295"
+       x="-146.29256"
+       y="135.58667" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-25.26483"
+       y="199.66684"
+       id="text79"><tspan
+         sodipodi:role="line"
+         id="tspan77"
+         x="-25.26483"
+         y="199.66684"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Disjoncteurs</tspan></text>
+    <rect
+       inkscape:label=""
+       style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
+       id="BreakerBtn"
+       width="6.1471992"
+       height="5.8799295"
+       x="-33.504822"
+       y="194.7804" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-24.018593"
+       y="248.61609"
+       id="text83"><tspan
+         sodipodi:role="line"
+         id="tspan81"
+         x="-24.018593"
+         y="248.61609"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Clés</tspan></text>
+    <rect
+       inkscape:label=""
+       style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
+       id="KeyBtn"
+       width="6.1471992"
+       height="5.8799295"
+       x="-32.703011"
+       y="242.90456" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:block;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="-90.170174"
-       y="141.20764"
+       x="-105.67181"
+       y="141.03094"
        id="tCasqueFinished"
        inkscape:label=""><tspan
          sodipodi:role="line"
          id="tspan4619"
-         x="-90.170174"
-         y="141.20764"
-         style="stroke-width:0.26458332">Terminé</tspan></text>
+         x="-105.67181"
+         y="141.03094"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Terminé</tspan></text>
     <circle
        r="0"
        cy="163.58812"
@@ -647,15 +627,15 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="-95.07959"
-       y="200.3587"
-       id="tVannesFinished"
+       x="-108.97761"
+       y="199.54767"
+       id="tValvesFinished"
        inkscape:label=""><tspan
          sodipodi:role="line"
          id="tspan4619-6"
-         x="-95.07959"
-         y="200.3587"
-         style="stroke-width:0.26458332">Terminé</tspan></text>
+         x="-108.97761"
+         y="199.54767"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Terminé</tspan></text>
     <circle
        r="0"
        cy="172.94255"
@@ -775,13 +755,13 @@
          style="display:block;opacity:1;fill:#ffb71c;fill-opacity:1;stroke:#000000;stroke-width:0.26458332;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
       <text
          id="text1101"
-         y="239.03221"
-         x="-377.71875"
+         y="227.75427"
+         x="-377.9238"
          style="font-style:normal;font-weight:normal;font-size:4.23333311px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          xml:space="preserve"><tspan
            style="stroke-width:0.26458332px"
-           y="239.03221"
-           x="-377.71875"
+           y="227.75427"
+           x="-377.9238"
            id="tspan1099"
            sodipodi:role="line">Sequence correcte :</tspan></text>
       <circle
@@ -1187,15 +1167,15 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:block;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="14.083603"
-       y="142.63934"
+       x="4.996439"
+       y="142.04982"
        id="tSimonFinished"
        inkscape:label=""><tspan
          sodipodi:role="line"
          id="tspan4619-3"
-         x="14.083603"
-         y="142.63934"
-         style="stroke-width:0.26458332">Terminé</tspan></text>
+         x="4.996439"
+         y="142.04982"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Terminé</tspan></text>
     <circle
        r="0"
        cy="217.3093"
@@ -2055,15 +2035,15 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:block;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="41.064137"
-       y="200.51622"
+       x="19.682573"
+       y="199.9574"
        id="tDisjFinished"
        inkscape:label=""><tspan
          sodipodi:role="line"
          id="tspan4619-5"
-         x="41.064137"
-         y="200.51622"
-         style="stroke-width:0.26458332">Terminé</tspan></text>
+         x="19.682573"
+         y="199.9574"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Terminé</tspan></text>
     <g
        style="display:inline"
        transform="translate(-232.61222,1.4546877)"
@@ -2298,5 +2278,17 @@
            inkscape:label="" />
       </g>
     </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:block;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-5.4247866"
+       y="248.39456"
+       id="tKeysFinished"
+       inkscape:label=""><tspan
+         sodipodi:role="line"
+         id="tspan4619-5-1"
+         x="-5.4247866"
+         y="248.39456"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Terminé</tspan></text>
   </g>
 </svg>

@@ -89,9 +89,14 @@
 					"P_Simon.xDebouncedYellowBtn",
 					"P_Simon.xDebouncedWhiteBtn",
 					"P_Simon.c_aeCorrectSequence",
-					".gat_xSimonSolved"
-					
+					".gat_xSimonSolved",
+					".gat_xKeysSolved"					
                 ];
+				const IndexHelmetsSolved = 15;
+				const IndexValveSolved = 27;
+				const IndexBreakerSolved = 37;
+				const IndexSimonSolved = 61;
+				const IndexKeysSolved = 62;
 		
 			const handlesVarSizes = [
 					4,
@@ -155,6 +160,7 @@
 					1,
 					1,
 					16,
+					1,
 					1
 					
 				];
@@ -174,15 +180,18 @@
 			var UICasisersAmovibles = null;
 			var UIRightCasques = Array(4).fill(null); 
 			var UICasqueTextFinished = null;
+			var UICasqueForceBtn = null;
 			
 			var UIOpenedV = Array(9).fill(null);	
 			var UIClosedV = Array(9).fill(null);	
 			var UIValvesTextFinished = null;
+			var UIValvesForceBtn = null;
 			
 			var UIBreakerON = Array(8).fill(null);
 			var UIBreakerOFF = Array(8).fill(null);
 			var UIBreakerRight = Array(8).fill(null);		
 			var UIBreakerTextFinished = null;
+			var UIBreakerForceBtn = null;
 			
 			var UISimonbtnG = null;
 			var UISimonbtnW = null;
@@ -198,7 +207,11 @@
 			var UISimonFingerY = null;		
 			var UISimonResult = Array(10).fill(null);
 			var UISimonCorrect = Array(8).fill(null);
-			var UISimonTextFinished = null;
+			var UISimonTextFinished = null
+			var UISimonForceBtn = null;
+			
+			var UIKeyForceBtn = null;
+			var UIKeysTextFinished = null;
 			
             // Occurs if the window has loaded;
             window.onload = (function () {
@@ -216,6 +229,7 @@
 				UIRightCasques[2] = svgROOT.getElementById("RightCasque3");
 				UIRightCasques[3] = svgROOT.getElementById("RightCasque4");		
 				UICasqueTextFinished = svgROOT.getElementById("tCasqueFinished");
+				UICasqueForceBtn = svgROOT.getElementById("CasqueBtn");
 				
 				UIOpenedV[0] = svgROOT.getElementById("OpenedV1");
 				UIOpenedV[1] = svgROOT.getElementById("OpenedV2");
@@ -235,7 +249,8 @@
 				UIClosedV[6] = svgROOT.getElementById("ClosedV7");
 				UIClosedV[7] = svgROOT.getElementById("ClosedV8");
 				UIClosedV[8] = svgROOT.getElementById("ClosedV9");
-				UIValvesTextFinished = svgROOT.getElementById("tValvesFinished"); 
+				UIValvesTextFinished = svgROOT.getElementById("tValvesFinished");
+				UIValvesForceBtn = svgROOT.getElementById("ValveBtn");
 				
 				UIBreakerON[0] = svgROOT.getElementById("ON1");
 				UIBreakerON[1] = svgROOT.getElementById("ON2");
@@ -265,6 +280,7 @@
 				UIBreakerRight[7] = svgROOT.getElementById("RightB8");
 				UIBreakerRight[8] = svgROOT.getElementById("RightB9");
 				UIBreakerTextFinished = svgROOT.getElementById("tDisjFinished");
+				UIBreakerForceBtn = svgROOT.getElementById("BreakerBtn");
 
 				UISimonbtnG = svgROOT.getElementById("btnG");
 				UISimonbtnW = svgROOT.getElementById("btnW");
@@ -296,8 +312,17 @@
 				UISimonCorrect[5] = svgROOT.getElementById("sequence6");
 				UISimonCorrect[6] = svgROOT.getElementById("sequence7");
 				UISimonCorrect[7] = svgROOT.getElementById("sequence8");
-
 				UISimonTextFinished = svgROOT.getElementById("tSimonFinished");
+				UISimonForceBtn = svgROOT.getElementById("SimonBtn");
+				
+				UIKeysTextFinished = svgROOT.getElementById("tKeysFinished");
+				UIKeyForceBtn = svgROOT.getElementById("KeyBtn");
+				
+				UICasqueForceBtn.onclick = UICasqueForceBtnClick;
+				UIValvesForceBtn.onclick = UIValvesForceBtnClick;
+				UIBreakerForceBtn.onclick = UIBreakerForceBtnClick;
+                UISimonForceBtn.onclick = UISimonForceBtnClick;
+				UIKeyForceBtn.onclick = UIKeyForceBtnClick;			
 
                 // Prepare data for writing to switch variable;
                 var switchTrueBase64Writer = new TcAdsWebService.DataWriter();
@@ -340,17 +365,29 @@
 
             });
 
-
+			// Occurs if the background of the radio button "Fast" is clicked;
+            var UICasqueForceBtnClick = (function () {
+                client.write(
+                    NETID,
+                    PORT,
+                    0x0000F005, // IndexGroup = Write variable by handle;
+                    handle_variables[IndexHelmetsSolved],
+                    switchTrueBase64,
+                    UICasqueForceBtnWriteCallback,
+                    null,
+                    general_timeout,
+                    UICasqueForceBtnWriteTimeoutCallback,
+                    true
+                 );
+            });
 
             // Occurs if the write request has finished;
-            var RadioBackgroundSlowWriteCallback = (function (e, s) {
-
+            var UICasqueForceBtnWriteCallback = (function (e, s) {
                 if (e && e.isBusy) {
                     // HANDLE PROGRESS TASKS HERE;
                     // Exit callback function because request is still busy;
                     return;
                 }
-
                 if (e && !e.hasError) {
                     // Success
                 } else {
@@ -361,10 +398,177 @@
                     else if (e.error.getTypeString() == "TcAdsWebService.Error") {
                         // HANDLE TcAdsWebService.Error HERE;
                     }
-
                 }
-
             });
+
+            // Occurs if the writing of the value "true" to the siwtch variable runs into timeout;
+            var UICasqueForceBtnWriteTimeoutCallback = (function () {
+                // Handle Timeout here;
+            });
+			
+			
+            var UIValvesForceBtnClick = (function () {
+                client.write(
+                    NETID,
+                    PORT,
+                    0x0000F005, // IndexGroup = Write variable by handle;
+                    handle_variables[IndexValveSolved],
+                    switchTrueBase64,
+                    UIValvesForceBtnWriteCallback,
+                    null,
+                    general_timeout,
+                    UIValvesForceBtnWriteTimeoutCallback,
+                    true
+                 );
+            });
+
+            // Occurs if the write request has finished;
+            var UIValvesForceBtnWriteCallback = (function (e, s) {
+                if (e && e.isBusy) {
+                    // HANDLE PROGRESS TASKS HERE;
+                    // Exit callback function because request is still busy;
+                    return;
+                }
+                if (e && !e.hasError) {
+                    // Success
+                } else {
+                    if (e.error.getTypeString() == "TcAdsWebService.ResquestError") {
+                        // HANDLE TcAdsWebService.ResquestError HERE;
+                    }
+                    else if (e.error.getTypeString() == "TcAdsWebService.Error") {
+                        // HANDLE TcAdsWebService.Error HERE;
+                    }
+                }
+            });
+
+            // Occurs if the writing of the value "true" to the siwtch variable runs into timeout;
+            var UIValvesForceBtnWriteTimeoutCallback = (function () {
+                // Handle Timeout here;
+            });
+			
+			
+			
+			var UIBreakerForceBtnClick = (function () {
+                client.write(
+                    NETID,
+                    PORT,
+                    0x0000F005, // IndexGroup = Write variable by handle;
+                    handle_variables[IndexBreakerSolved],
+                    switchTrueBase64,
+                    UIBreakerForceBtnWriteCallback,
+                    null,
+                    general_timeout,
+                    UIBreakerForceBtnWriteTimeoutCallback,
+                    true
+                 );
+            });
+
+            // Occurs if the write request has finished;
+            var UIBreakerForceBtnWriteCallback = (function (e, s) {
+                if (e && e.isBusy) {
+                    // HANDLE PROGRESS TASKS HERE;
+                    // Exit callback function because request is still busy;
+                    return;
+                }
+                if (e && !e.hasError) {
+                    // Success
+                } else {
+                    if (e.error.getTypeString() == "TcAdsWebService.ResquestError") {
+                        // HANDLE TcAdsWebService.ResquestError HERE;
+                    }
+                    else if (e.error.getTypeString() == "TcAdsWebService.Error") {
+                        // HANDLE TcAdsWebService.Error HERE;
+                    }
+                }
+            });
+
+            // Occurs if the writing of the value "true" to the siwtch variable runs into timeout;
+            var UIBreakerForceBtnWriteTimeoutCallback = (function () {
+                // Handle Timeout here;
+            });
+
+
+
+			var UISimonForceBtnClick = (function () {
+                client.write(
+                    NETID,
+                    PORT,
+                    0x0000F005, // IndexGroup = Write variable by handle;
+                    handle_variables[IndexSimonSolved],
+                    switchTrueBase64,
+                    UISimonForceBtnWriteCallback,
+                    null,
+                    general_timeout,
+                    UISimonForceBtnWriteTimeoutCallback,
+                    true
+                 );
+            });
+
+            // Occurs if the write request has finished;
+            var UISimonForceBtnWriteCallback = (function (e, s) {
+                if (e && e.isBusy) {
+                    // HANDLE PROGRESS TASKS HERE;
+                    // Exit callback function because request is still busy;
+                    return;
+                }
+                if (e && !e.hasError) {
+                    // Success
+                } else {
+                    if (e.error.getTypeString() == "TcAdsWebService.ResquestError") {
+                        // HANDLE TcAdsWebService.ResquestError HERE;
+                    }
+                    else if (e.error.getTypeString() == "TcAdsWebService.Error") {
+                        // HANDLE TcAdsWebService.Error HERE;
+                    }
+                }
+            });
+
+            // Occurs if the writing of the value "true" to the siwtch variable runs into timeout;
+            var UISimonForceBtnWriteTimeoutCallback = (function () {
+                // Handle Timeout here;
+            });
+			
+			
+			
+			var UIKeyForceBtnClick = (function () {
+                client.write(
+                    NETID,
+                    PORT,
+                    0x0000F005, // IndexGroup = Write variable by handle;
+                    handle_variables[IndexKeysSolved],
+                    switchTrueBase64,
+                    UIKeyForceBtnWriteCallback,
+                    null,
+                    general_timeout,
+                    UIKeyForceBtnWriteTimeoutCallback,
+                    true
+                 );
+            });
+
+            // Occurs if the write request has finished;
+            var UIKeyForceBtnWriteCallback = (function (e, s) {
+                if (e && e.isBusy) {
+                    // HANDLE PROGRESS TASKS HERE;
+                    // Exit callback function because request is still busy;
+                    return;
+                }
+                if (e && !e.hasError) {
+                    // Success
+                } else {
+                    if (e.error.getTypeString() == "TcAdsWebService.ResquestError") {
+                        // HANDLE TcAdsWebService.ResquestError HERE;
+                    }
+                    else if (e.error.getTypeString() == "TcAdsWebService.Error") {
+                        // HANDLE TcAdsWebService.Error HERE;
+                    }
+                }
+            });
+
+            // Occurs if the writing of the value "true" to the siwtch variable runs into timeout;
+            var UIKeyForceBtnWriteTimeoutCallback = (function () {
+                // Handle Timeout here;
+            });
+
 
             // Occurs if the readwrite for the sumcommando has finished;
             var RequestHandlesCallback = (function (e, s) {
@@ -542,7 +746,7 @@
 					}
 					var isSimonFinished = reader.readBOOL();
 							
-							
+					var isKeysFinished = reader.readBOOL();	
 							
 					
                     // Update UI
@@ -767,6 +971,13 @@
 						UISimonTextFinished.style.opacity = 0;
 					}
 					
+					
+					if (isKeysFinished) {
+						UIKeysTextFinished.style.opacity = 1;
+					} else {
+						UIKeysTextFinished.style.opacity = 0;
+					}
+					
                 } else {
 
                     if (e.error.getTypeString() == "TcAdsWebService.ResquestError") {
@@ -829,7 +1040,6 @@
     </script>
 </head>
 <body>
-
 <svg
    xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"
    xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -1073,10 +1283,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.9899495"
-     inkscape:cx="206.34802"
-     inkscape:cy="255.80545"
+     inkscape:cx="447.53654"
+     inkscape:cy="340.09716"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer1-0"
+     inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1366"
      inkscape:window-height="706"
@@ -1135,142 +1345,122 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="-22.680399"
-       y="130.96434"
+       x="-29.629406"
+       y="126.68803"
        id="timer"
        inkscape:label=""><tspan
          sodipodi:role="line"
          id="tspan61"
-         x="-22.680399"
-         y="130.96434"
+         x="-29.629406"
+         y="126.68803"
          style="stroke-width:0.26458332">Time : </tspan></text>
-    <g
-       id="g5173"
-       transform="translate(117.06405,-16.036172)">
-      <text
-         id="text67"
-         y="158.4716"
-         x="-136.64243"
-         style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-         xml:space="preserve"><tspan
-           style="stroke-width:0.26458332"
-           y="158.4716"
-           x="-136.64243"
-           id="tspan65"
-           sodipodi:role="line">Simon</tspan></text>
-      <rect
-         y="151.58614"
-         x="-145.22348"
-         height="5.8799295"
-         width="6.1471992"
-         id="SimonBtn"
-         style="fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
-         inkscape:label="" />
-    </g>
-    <g
-       id="g5178"
-       transform="translate(-0.80180857,21.833997)">
-      <text
-         id="text71"
-         y="177.98227"
-         x="-136.02747"
-         style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-         xml:space="preserve"><tspan
-           style="stroke-width:0.26458332"
-           y="177.98227"
-           x="-136.02747"
-           id="tspan69"
-           sodipodi:role="line">Valves</tspan></text>
-      <rect
-         y="171.25958"
-         x="-145.22348"
-         height="5.8799295"
-         width="6.1471992"
-         id="ValveBtn"
-         style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
-         inkscape:label="" />
-    </g>
-    <g
-       id="g5183"
-       transform="translate(-1.069078,-57.351325)">
-      <text
-         id="text75"
-         y="198.02748"
-         x="-136.53906"
-         style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-         xml:space="preserve"><tspan
-           style="stroke-width:0.26458332"
-           y="198.02748"
-           x="-136.53906"
-           id="tspan73"
-           sodipodi:role="line">Casques</tspan></text>
-      <rect
-         y="192.26082"
-         x="-145.22348"
-         height="5.8799295"
-         width="6.1471992"
-         id="CasqueBtn"
-         style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
-         inkscape:label="" />
-    </g>
-    <g
-       id="g5188"
-       transform="translate(111.71866,-20.294458)">
-      <text
-         id="text79"
-         y="220.21086"
-         x="-136.98349"
-         style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-         xml:space="preserve"><tspan
-           style="stroke-width:0.26458332"
-           y="220.21086"
-           x="-136.98349"
-           id="tspan77"
-           sodipodi:role="line">Disjoncteurs</tspan></text>
-      <rect
-         y="214.35118"
-         x="-145.22348"
-         height="5.8799295"
-         width="6.1471992"
-         id="DisjoncteurBtn"
-         style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
-         inkscape:label="" />
-    </g>
-    <g
-       id="g5193"
-       transform="translate(112.52047,6.9490077)">
-      <text
-         id="text83"
-         y="242.39423"
-         x="-136.53906"
-         style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-         xml:space="preserve"><tspan
-           style="stroke-width:0.26458332"
-           y="242.39423"
-           x="-136.53906"
-           id="tspan81"
-           sodipodi:role="line">Clés</tspan></text>
-      <rect
-         y="235.29689"
-         x="-145.22348"
-         height="5.8799295"
-         width="6.1471992"
-         id="CleBtn"
-         style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
-         inkscape:label="" />
-    </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-19.578375"
+       y="141.90857"
+       id="text67"><tspan
+         sodipodi:role="line"
+         id="tspan65"
+         x="-19.578375"
+         y="141.90857"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Simon</tspan></text>
+    <rect
+       inkscape:label=""
+       style="fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
+       id="SimonBtn"
+       width="6.1471992"
+       height="5.8799295"
+       x="-28.15943"
+       y="136.33827" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-136.82927"
+       y="199.29791"
+       id="text71"><tspan
+         sodipodi:role="line"
+         id="tspan69"
+         x="-136.82927"
+         y="199.29791"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Vannes</tspan></text>
+    <rect
+       inkscape:label=""
+       style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
+       id="ValveBtn"
+       width="6.1471992"
+       height="5.8799295"
+       x="-146.02528"
+       y="193.83614" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-137.60814"
+       y="140.4111"
+       id="text75"><tspan
+         sodipodi:role="line"
+         id="tspan73"
+         x="-137.60814"
+         y="140.4111"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Casques</tspan></text>
+    <rect
+       inkscape:label=""
+       style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
+       id="CasqueBtn"
+       width="6.1471992"
+       height="5.8799295"
+       x="-146.29256"
+       y="135.58667" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-25.26483"
+       y="199.66684"
+       id="text79"><tspan
+         sodipodi:role="line"
+         id="tspan77"
+         x="-25.26483"
+         y="199.66684"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Disjoncteurs</tspan></text>
+    <rect
+       inkscape:label=""
+       style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
+       id="BreakerBtn"
+       width="6.1471992"
+       height="5.8799295"
+       x="-33.504822"
+       y="194.7804" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-24.018593"
+       y="248.61609"
+       id="text83"><tspan
+         sodipodi:role="line"
+         id="tspan81"
+         x="-24.018593"
+         y="248.61609"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Clés</tspan></text>
+    <rect
+       inkscape:label=""
+       style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
+       id="KeyBtn"
+       width="6.1471992"
+       height="5.8799295"
+       x="-32.703011"
+       y="242.90456" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:block;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="-90.170174"
-       y="141.20764"
+       x="-105.67181"
+       y="141.03094"
        id="tCasqueFinished"
        inkscape:label=""><tspan
          sodipodi:role="line"
          id="tspan4619"
-         x="-90.170174"
-         y="141.20764"
-         style="stroke-width:0.26458332">Terminé</tspan></text>
+         x="-105.67181"
+         y="141.03094"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Terminé</tspan></text>
     <circle
        r="0"
        cy="163.58812"
@@ -1476,15 +1666,15 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="-95.07959"
-       y="200.3587"
+       x="-108.97761"
+       y="199.54767"
        id="tValvesFinished"
        inkscape:label=""><tspan
          sodipodi:role="line"
          id="tspan4619-6"
-         x="-95.07959"
-         y="200.3587"
-         style="stroke-width:0.26458332">Terminé</tspan></text>
+         x="-108.97761"
+         y="199.54767"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Terminé</tspan></text>
     <circle
        r="0"
        cy="172.94255"
@@ -2016,15 +2206,15 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:block;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="14.083603"
-       y="142.63934"
+       x="4.996439"
+       y="142.04982"
        id="tSimonFinished"
        inkscape:label=""><tspan
          sodipodi:role="line"
          id="tspan4619-3"
-         x="14.083603"
-         y="142.63934"
-         style="stroke-width:0.26458332">Terminé</tspan></text>
+         x="4.996439"
+         y="142.04982"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Terminé</tspan></text>
     <circle
        r="0"
        cy="217.3093"
@@ -2884,15 +3074,15 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:block;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="41.064137"
-       y="200.51622"
+       x="19.682573"
+       y="199.9574"
        id="tDisjFinished"
        inkscape:label=""><tspan
          sodipodi:role="line"
          id="tspan4619-5"
-         x="41.064137"
-         y="200.51622"
-         style="stroke-width:0.26458332">Terminé</tspan></text>
+         x="19.682573"
+         y="199.9574"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Terminé</tspan></text>
     <g
        style="display:inline"
        transform="translate(-232.61222,1.4546877)"
@@ -3127,8 +3317,21 @@
            inkscape:label="" />
       </g>
     </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:block;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-5.4247866"
+       y="248.39456"
+       id="tKeysFinished"
+       inkscape:label=""><tspan
+         sodipodi:role="line"
+         id="tspan4619-5-1"
+         x="-5.4247866"
+         y="248.39456"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Terminé</tspan></text>
   </g>
 </svg>
+
 
 </body>
 </html>
