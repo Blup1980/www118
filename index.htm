@@ -90,13 +90,17 @@
 					"P_Simon.xDebouncedWhiteBtn",
 					"P_Simon.c_aeCorrectSequence",
 					".gat_xSimonSolved",
-					".gat_xKeysSolved"					
+					".gat_xKeysSolved",
+					".g_eGameState",
+					".gati_xKey1",
+					".gati_xKey2"
                 ];
 				const IndexHelmetsSolved = 15;
 				const IndexValveSolved = 27;
 				const IndexBreakerSolved = 37;
 				const IndexSimonSolved = 61;
 				const IndexKeysSolved = 62;
+				const IndexGameState = 63;
 		
 			const handlesVarSizes = [
 					4,
@@ -161,8 +165,10 @@
 					1,
 					16,
 					1,
-					1
-					
+					1,
+					2,
+					1,
+					1					
 				];
 				
 			const totalPDOSize = handlesVarSizes.reduce(function(pv, cv) { return pv + parseInt(cv); }, 0);
@@ -209,9 +215,23 @@
 			var UISimonCorrect = Array(8).fill(null);
 			var UISimonTextFinished = null
 			var UISimonForceBtn = null;
-			
+
+			var UIKeyLeftOFF = null;
+			var UIKeyRightOFF = null;			
+			var UIKeyLeftON = null;
+			var UIKeyRightON = null;
 			var UIKeyForceBtn = null;
 			var UIKeysTextFinished = null;
+			
+			var UIRecoveryText = null;
+			var UIPendingStartText = null;
+			var UIPlayingText = null;
+			var UIEndGameText = null;
+			
+			var UIRecoveryBtn = null;
+			var UIPendingStartBtn = null;
+			var UIPlayingBtn = null;
+			var UIEndGameBtn = null;
 			
             // Occurs if the window has loaded;
             window.onload = (function () {
@@ -314,15 +334,33 @@
 				UISimonCorrect[7] = svgROOT.getElementById("sequence8");
 				UISimonTextFinished = svgROOT.getElementById("tSimonFinished");
 				UISimonForceBtn = svgROOT.getElementById("SimonBtn");
-				
+
+				UIKeyLeftOFF = svgROOT.getElementById("KeyLeftOFF");
+				UIKeyRightOFF = svgROOT.getElementById("KeyRightOFF");
+				UIKeyLeftON = svgROOT.getElementById("KeyLeftON");
+				UIKeyRightON = svgROOT.getElementById("KeyRightON");
 				UIKeysTextFinished = svgROOT.getElementById("tKeysFinished");
 				UIKeyForceBtn = svgROOT.getElementById("KeyBtn");
 				
+				UIRecoveryText = svgROOT.getElementById("tRecovery");
+				UIPendingStartText = svgROOT.getElementById("tPendingStart");
+				UIPlayingText = svgROOT.getElementById("tPlaying");
+				UIEndGameText = svgROOT.getElementById("tEndGame");
+				UIRecoveryBtn = svgROOT.getElementById("RecoveryBtn");
+				UIPendingStartBtn = svgROOT.getElementById("PendingStartBtn");
+				UIPlayingBtn = svgROOT.getElementById("PlayingBtn");
+				UIEndGameBtn = svgROOT.getElementById("EndGameBtn");
+		
 				UICasqueForceBtn.onclick = UICasqueForceBtnClick;
 				UIValvesForceBtn.onclick = UIValvesForceBtnClick;
 				UIBreakerForceBtn.onclick = UIBreakerForceBtnClick;
                 UISimonForceBtn.onclick = UISimonForceBtnClick;
 				UIKeyForceBtn.onclick = UIKeyForceBtnClick;			
+
+				UIRecoveryBtn.onclick = UIRecoveryBtnClick;
+				UIPendingStartBtn.onclick = UIPendingStartBtnClick;
+				UIPlayingBtn.onclick = UIPlayingBtnClick;
+				UIEndGameBtn.onclick = UIEndGameBtnClick;
 
                 // Prepare data for writing to switch variable;
                 var switchTrueBase64Writer = new TcAdsWebService.DataWriter();
@@ -364,8 +402,179 @@
                     true);
 
             });
+			
+			
+			var UIRecoveryBtnClick = (function () {
+				var switchWriter = new TcAdsWebService.DataWriter();
+                switchWriter.writeINT(0);
+                client.write(
+                    NETID,
+                    PORT,
+                    0x0000F005, // IndexGroup = Write variable by handle;
+                    handle_variables[IndexGameState],
+                    switchWriter.getBase64EncodedData(),
+                    UIRecoveryBtnWriteCallback,
+                    null,
+                    general_timeout,
+                    UIRecoveryBtnWriteTimeoutCallback,
+                    true
+                 );
+            });
 
-			// Occurs if the background of the radio button "Fast" is clicked;
+            // Occurs if the write request has finished;
+            var UIRecoveryBtnWriteCallback = (function (e, s) {
+                if (e && e.isBusy) {
+                    // HANDLE PROGRESS TASKS HERE;
+                    // Exit callback function because request is still busy;
+                    return;
+                }
+                if (e && !e.hasError) {
+                    // Success
+                } else {
+
+                    if (e.error.getTypeString() == "TcAdsWebService.ResquestError") {
+                        // HANDLE TcAdsWebService.ResquestError HERE;
+                    }
+                    else if (e.error.getTypeString() == "TcAdsWebService.Error") {
+                        // HANDLE TcAdsWebService.Error HERE;
+                    }
+                }
+            });
+			
+			// Occurs if the writing of the value "true" to the siwtch variable runs into timeout;
+            var UIRecoveryBtnWriteTimeoutCallback = (function () {
+                // Handle Timeout here;
+            });
+			
+			var UIPendingStartBtnClick = (function () {
+				var switchWriter = new TcAdsWebService.DataWriter();
+                switchWriter.writeINT(1);
+                client.write(
+                    NETID,
+                    PORT,
+                    0x0000F005, // IndexGroup = Write variable by handle;
+                    handle_variables[IndexGameState],
+                    switchWriter.getBase64EncodedData(),
+                    UIPendingStartBtnWriteCallback,
+                    null,
+                    general_timeout,
+                    UIPendingStartBtnWriteTimeoutCallback,
+                    true
+                 );
+            });
+
+            // Occurs if the write request has finished;
+            var UIPendingStartBtnWriteCallback = (function (e, s) {
+                if (e && e.isBusy) {
+                    // HANDLE PROGRESS TASKS HERE;
+                    // Exit callback function because request is still busy;
+                    return;
+                }
+                if (e && !e.hasError) {
+                    // Success
+                } else {
+
+                    if (e.error.getTypeString() == "TcAdsWebService.ResquestError") {
+                        // HANDLE TcAdsWebService.ResquestError HERE;
+                    }
+                    else if (e.error.getTypeString() == "TcAdsWebService.Error") {
+                        // HANDLE TcAdsWebService.Error HERE;
+                    }
+                }
+            });
+			
+			// Occurs if the writing of the value "true" to the siwtch variable runs into timeout;
+            var UIPendingStartBtnWriteTimeoutCallback = (function () {
+                // Handle Timeout here;
+            });
+			
+			
+			var UIPlayingBtnClick = (function () {
+				var switchWriter = new TcAdsWebService.DataWriter();
+                switchWriter.writeINT(2);
+                client.write(
+                    NETID,
+                    PORT,
+                    0x0000F005, // IndexGroup = Write variable by handle;
+                    handle_variables[IndexGameState],
+                    switchWriter.getBase64EncodedData(),
+                    UIPlayingBtnWriteCallback,
+                    null,
+                    general_timeout,
+                    UIPlayingBtnWriteTimeoutCallback,
+                    true
+                 );
+            });
+
+            // Occurs if the write request has finished;
+            var UIPlayingBtnWriteCallback = (function (e, s) {
+                if (e && e.isBusy) {
+                    // HANDLE PROGRESS TASKS HERE;
+                    // Exit callback function because request is still busy;
+                    return;
+                }
+                if (e && !e.hasError) {
+                    // Success
+                } else {
+
+                    if (e.error.getTypeString() == "TcAdsWebService.ResquestError") {
+                        // HANDLE TcAdsWebService.ResquestError HERE;
+                    }
+                    else if (e.error.getTypeString() == "TcAdsWebService.Error") {
+                        // HANDLE TcAdsWebService.Error HERE;
+                    }
+                }
+            });
+			
+			// Occurs if the writing of the value "true" to the siwtch variable runs into timeout;
+            var UIPlayingBtnWriteTimeoutCallback = (function () {
+                // Handle Timeout here;
+            });
+			
+			
+			
+			var UIEndGameBtnClick = (function () {
+				var switchWriter = new TcAdsWebService.DataWriter();
+                switchWriter.writeINT(3);
+                client.write(
+                    NETID,
+                    PORT,
+                    0x0000F005, // IndexGroup = Write variable by handle;
+                    handle_variables[IndexGameState],
+                    switchWriter.getBase64EncodedData(),
+                    UIEndGameBtnWriteCallback,
+                    null,
+                    general_timeout,
+                    UIEndGameBtnWriteTimeoutCallback,
+                    true
+                 );
+            });
+
+            // Occurs if the write request has finished;
+            var UIEndGameBtnWriteCallback = (function (e, s) {
+                if (e && e.isBusy) {
+                    // HANDLE PROGRESS TASKS HERE;
+                    // Exit callback function because request is still busy;
+                    return;
+                }
+                if (e && !e.hasError) {
+                    // Success
+                } else {
+
+                    if (e.error.getTypeString() == "TcAdsWebService.ResquestError") {
+                        // HANDLE TcAdsWebService.ResquestError HERE;
+                    }
+                    else if (e.error.getTypeString() == "TcAdsWebService.Error") {
+                        // HANDLE TcAdsWebService.Error HERE;
+                    }
+                }
+            });
+			
+			// Occurs if the writing of the value "true" to the siwtch variable runs into timeout;
+            var UIEndGameBtnWriteTimeoutCallback = (function () {
+                // Handle Timeout here;
+            });
+
             var UICasqueForceBtnClick = (function () {
                 client.write(
                     NETID,
@@ -744,9 +953,13 @@
 					for (var i = 0; i < SimonCorrectSequencePDO.length; i++) {
 						SimonCorrectSequencePDO[i] = reader.readINT();
 					}
-					var isSimonFinished = reader.readBOOL();
-							
-					var isKeysFinished = reader.readBOOL();	
+					var isSimonFinished = reader.readBOOL();	
+					var isKeysFinished = reader.readBOOL();
+					var gameState = reader.readINT();
+					
+					var KeysLeftKeyPDO = reader.readBOOL();
+					var KeysRightKeyPDO = reader.readBOOL();
+					
 							
 					
                     // Update UI
@@ -971,11 +1184,55 @@
 						UISimonTextFinished.style.opacity = 0;
 					}
 					
+					if (KeysLeftKeyPDO) {
+						UIKeyLeftOFF.style.opacity = 0;
+						UIKeyLeftON.style.opacity = 1;
+					} else {
+						UIKeyLeftOFF.style.opacity = 1;
+						UIKeyLeftON.style.opacity = 0;
+					}
+					
+					if (KeysRightKeyPDO) {
+						UIKeyRightOFF.style.opacity = 0;
+						UIKeyRightON.style.opacity = 1;
+					} else {
+						UIKeyRightOFF.style.opacity = 1;
+						UIKeyRightON.style.opacity = 0;
+					}
+					
 					
 					if (isKeysFinished) {
 						UIKeysTextFinished.style.opacity = 1;
 					} else {
 						UIKeysTextFinished.style.opacity = 0;
+					}
+					
+					
+					switch(gameState) {
+						case 0:
+							UIRecoveryText.style.fill = "#00ff00ff";
+							UIPendingStartText.style.fill   = "#000000ff";
+							UIPlayingText.style.fill        = "#000000ff";
+							UIEndGameText.style.fill        = "#000000ff";
+							break;
+						case 1:
+							UIRecoveryText.style.fill = "#000000ff";
+							UIPendingStartText.style.fill   = "#00ff00ff";
+							UIPlayingText.style.fill        = "#000000ff";
+							UIEndGameText.style.fill        = "#000000ff";
+							break;
+						case 2:
+							UIRecoveryText.style.fill = "#000000ff";
+							UIPendingStartText.style.fill   = "#000000ff";
+							UIPlayingText.style.fill        = "#00ff00ff";
+							UIEndGameText.style.fill        = "#000000ff";
+							break;
+						case 3:
+							UIRecoveryText.style.fill = "#000000ff";
+							UIPendingStartText.style.fill   = "#000000ff";
+							UIPlayingText.style.fill        = "#000000ff";
+							UIEndGameText.style.fill        = "#00ff00ff";
+							break;
 					}
 					
                 } else {
@@ -1050,9 +1307,9 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="211.60243mm"
-   height="158.63556mm"
-   viewBox="0 0 211.60243 158.63556"
+   width="269.07169mm"
+   height="158.77165mm"
+   viewBox="0 0 269.07168 158.77165"
    version="1.1"
    id="svgROOT"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
@@ -1068,7 +1325,7 @@
          id="stop5131" />
     </linearGradient>
     <linearGradient
-       gradientTransform="matrix(0.26458333,0,0,0.26458333,-155.85857,111.19455)"
+       gradientTransform="matrix(0.26433312,0,0,0.26433331,-154.98461,110.96677)"
        id="linearGradient3777"
        y2="300.21609"
        xlink:href="#linearGradient4227"
@@ -1149,8 +1406,8 @@
          id="stop4401" />
     </linearGradient>
     <filter
-       color-interpolation-filters="sRGB"
-       id="filter4407">
+       id="filter4407"
+       style="color-interpolation-filters:sRGB">
       <feGaussianBlur
          result="result8"
          stdDeviation="4"
@@ -1194,8 +1451,8 @@
        id="linearGradient3777-2"
        gradientTransform="matrix(0.26458333,0,0,0.26458333,-400.90721,120.22044)" />
     <filter
-       color-interpolation-filters="sRGB"
-       id="filter4407-8">
+       id="filter4407-8"
+       style="color-interpolation-filters:sRGB">
       <feGaussianBlur
          result="result8"
          stdDeviation="4"
@@ -1239,8 +1496,8 @@
        id="linearGradient3777-4"
        gradientTransform="matrix(0.26458333,0,0,0.26458333,-375.24934,164.58718)" />
     <filter
-       color-interpolation-filters="sRGB"
-       id="filter4407-5">
+       id="filter4407-5"
+       style="color-interpolation-filters:sRGB">
       <feGaussianBlur
          result="result8"
          stdDeviation="4"
@@ -1274,6 +1531,16 @@
          operator="in"
          id="feComposite4419-9" />
     </filter>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3771"
+       id="linearGradient1239"
+       x1="91.577324"
+       y1="139.24969"
+       x2="56.565018"
+       y2="139.24969"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.623456,0,0,0.99786334,-35.159651,0.53961423)" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -1282,11 +1549,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.9899495"
-     inkscape:cx="447.53654"
-     inkscape:cy="340.09716"
+     inkscape:zoom="1.979899"
+     inkscape:cx="551.83957"
+     inkscape:cy="95.280166"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g1358"
      showgrid="false"
      inkscape:window-width="1366"
      inkscape:window-height="706"
@@ -1299,7 +1566,12 @@
      fit-margin-bottom="0"
      inkscape:pagecheckerboard="false"
      borderlayer="false"
-     showguides="false" />
+     showguides="true"
+     inkscape:snap-bbox="false"
+     inkscape:object-nodes="false"
+     inkscape:object-paths="false"
+     inkscape:snap-smooth-nodes="true"
+     inkscape:guide-bbox="true" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -1316,14 +1588,14 @@
      inkscape:label="Calque 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(155.78062,-111.30894)"
+     transform="translate(155.03875,-110.92706)"
      style="display:inline">
     <rect
-       style="display:block;fill:url(#linearGradient3777);fill-opacity:1;stroke-width:0.26458332"
-       x="-155.78062"
-       y="111.30894"
-       width="211.60243"
-       height="158.63556"
+       style="display:block;fill:url(#linearGradient3777);fill-opacity:1;stroke:#000000;stroke-width:0.264;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       x="-154.90675"
+       y="111.08104"
+       width="211.40233"
+       height="158.48567"
        id="rectBackground" />
     <text
        line-height="125%"
@@ -1354,25 +1626,6 @@
          x="-29.629406"
          y="126.68803"
          style="stroke-width:0.26458332">Time : </tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="-19.578375"
-       y="141.90857"
-       id="text67"><tspan
-         sodipodi:role="line"
-         id="tspan65"
-         x="-19.578375"
-         y="141.90857"
-         style="font-size:7.05555534px;stroke-width:0.26458332">Simon</tspan></text>
-    <rect
-       inkscape:label=""
-       style="fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
-       id="SimonBtn"
-       width="6.1471992"
-       height="5.8799295"
-       x="-28.15943"
-       y="136.33827" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
@@ -1411,44 +1664,6 @@
        height="5.8799295"
        x="-146.29256"
        y="135.58667" />
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="-25.26483"
-       y="199.66684"
-       id="text79"><tspan
-         sodipodi:role="line"
-         id="tspan77"
-         x="-25.26483"
-         y="199.66684"
-         style="font-size:7.05555534px;stroke-width:0.26458332">Disjoncteurs</tspan></text>
-    <rect
-       inkscape:label=""
-       style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
-       id="BreakerBtn"
-       width="6.1471992"
-       height="5.8799295"
-       x="-33.504822"
-       y="194.7804" />
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="-24.018593"
-       y="248.61609"
-       id="text83"><tspan
-         sodipodi:role="line"
-         id="tspan81"
-         x="-24.018593"
-         y="248.61609"
-         style="font-size:7.05555534px;stroke-width:0.26458332">Clés</tspan></text>
-    <rect
-       inkscape:label=""
-       style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
-       id="KeyBtn"
-       width="6.1471992"
-       height="5.8799295"
-       x="-32.703011"
-       y="242.90456" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:block;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
@@ -1794,13 +2009,13 @@
          style="display:block;opacity:1;fill:#ffb71c;fill-opacity:1;stroke:#000000;stroke-width:0.26458332;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
       <text
          id="text1101"
-         y="239.03221"
-         x="-377.71875"
+         y="227.75427"
+         x="-377.9238"
          style="font-style:normal;font-weight:normal;font-size:4.23333311px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          xml:space="preserve"><tspan
            style="stroke-width:0.26458332px"
-           y="239.03221"
-           x="-377.71875"
+           y="227.75427"
+           x="-377.9238"
            id="tspan1099"
            sodipodi:role="line">Sequence correcte :</tspan></text>
       <circle
@@ -2203,18 +2418,41 @@
            id="path1151-6" />
       </g>
     </g>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:block;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="4.996439"
-       y="142.04982"
-       id="tSimonFinished"
-       inkscape:label=""><tspan
-         sodipodi:role="line"
-         id="tspan4619-3"
-         x="4.996439"
+    <g
+       id="g1343"
+       transform="translate(-5.3453922)">
+      <text
+         id="text67"
+         y="141.90857"
+         x="-19.578375"
+         style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         xml:space="preserve"><tspan
+           style="font-size:7.05555534px;stroke-width:0.26458332"
+           y="141.90857"
+           x="-19.578375"
+           id="tspan65"
+           sodipodi:role="line">Simon</tspan></text>
+      <rect
+         y="136.33827"
+         x="-28.15943"
+         height="5.8799295"
+         width="6.1471992"
+         id="SimonBtn"
+         style="fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
+         inkscape:label="" />
+      <text
+         inkscape:label=""
+         id="tSimonFinished"
          y="142.04982"
-         style="font-size:7.05555534px;stroke-width:0.26458332">Terminé</tspan></text>
+         x="4.996439"
+         style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:block;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         xml:space="preserve"><tspan
+           style="font-size:7.05555534px;stroke-width:0.26458332"
+           y="142.04982"
+           x="4.996439"
+           id="tspan4619-3"
+           sodipodi:role="line">Terminé</tspan></text>
+    </g>
     <circle
        r="0"
        cy="217.3093"
@@ -2229,7 +2467,7 @@
        style="fill:#06f627;fill-opacity:1;stroke:#000000;stroke-width:0.26458332;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     <g
        id="g6872"
-       transform="matrix(0.40571198,0,0,0.40571198,122.08765,117.81221)">
+       transform="matrix(0.40571198,0,0,0.40571198,122.08765,116.2247)">
       <rect
          y="215.39702"
          x="-356.61667"
@@ -3071,18 +3309,41 @@
          d="m -345.14969,225.75859 -1.96448,4.92729 -1.48141,-1.93227 -0.7085,0.83732 2.51196,2.70518 3.34927,-6.50532 z"
          style="display:block;fill:#06f627;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.18292187px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
     </g>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:block;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="19.682573"
-       y="199.9574"
-       id="tDisjFinished"
-       inkscape:label=""><tspan
-         sodipodi:role="line"
-         id="tspan4619-5"
-         x="19.682573"
+    <g
+       id="g1350"
+       transform="translate(0,-1.5875)">
+      <text
+         id="text79"
+         y="199.66684"
+         x="-25.26483"
+         style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         xml:space="preserve"><tspan
+           style="font-size:7.05555534px;stroke-width:0.26458332"
+           y="199.66684"
+           x="-25.26483"
+           id="tspan77"
+           sodipodi:role="line">Disjoncteurs</tspan></text>
+      <rect
+         y="194.7804"
+         x="-33.504822"
+         height="5.8799295"
+         width="6.1471992"
+         id="BreakerBtn"
+         style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
+         inkscape:label="" />
+      <text
+         inkscape:label=""
+         id="tDisjFinished"
          y="199.9574"
-         style="font-size:7.05555534px;stroke-width:0.26458332">Terminé</tspan></text>
+         x="19.682573"
+         style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:block;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         xml:space="preserve"><tspan
+           style="font-size:7.05555534px;stroke-width:0.26458332"
+           y="199.9574"
+           x="19.682573"
+           id="tspan4619-5"
+           sodipodi:role="line">Terminé</tspan></text>
+    </g>
     <g
        style="display:inline"
        transform="translate(-232.61222,1.4546877)"
@@ -3317,21 +3578,242 @@
            inkscape:label="" />
       </g>
     </g>
+    <g
+       id="g1357"
+       transform="translate(-0.80181122,-3.7041668)">
+      <text
+         id="text83"
+         y="248.61609"
+         x="-24.018593"
+         style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         xml:space="preserve"><tspan
+           style="font-size:7.05555534px;stroke-width:0.26458332"
+           y="248.61609"
+           x="-24.018593"
+           id="tspan81"
+           sodipodi:role="line">Clés</tspan></text>
+      <rect
+         y="242.90456"
+         x="-32.703011"
+         height="5.8799295"
+         width="6.1471992"
+         id="KeyBtn"
+         style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.26458332"
+         inkscape:label="" />
+      <text
+         inkscape:label=""
+         id="tKeysFinished"
+         y="248.66183"
+         x="-6.7611341"
+         style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:block;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         xml:space="preserve"><tspan
+           style="font-size:7.05555534px;stroke-width:0.26458332"
+           y="248.66183"
+           x="-6.7611341"
+           id="tspan4619-5-1"
+           sodipodi:role="line">Terminé</tspan></text>
+    </g>
+    <path
+       style="fill:url(#linearGradient1239);fill-opacity:1;stroke:#02000e;stroke-width:0.33884469;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 56.48931,111.09648 h 57.3742 v 158.41081 h -57.3742 z"
+       id="rect1230"
+       inkscape:connector-curvature="0" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:block;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="-5.4247866"
-       y="248.39456"
-       id="tKeysFinished"
+       style="font-style:normal;font-weight:normal;font-size:7.05555534px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="58.737034"
+       y="125.20039"
+       id="text1251"><tspan
+         sodipodi:role="line"
+         id="tspan1249"
+         x="58.737034"
+         y="125.20039"
+         style="stroke-width:0.26458332">Mode :</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:7.05555534px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="64.257202"
+       y="135.047"
+       id="tRecovery"
        inkscape:label=""><tspan
          sodipodi:role="line"
-         id="tspan4619-5-1"
-         x="-5.4247866"
-         y="248.39456"
-         style="font-size:7.05555534px;stroke-width:0.26458332">Terminé</tspan></text>
+         id="tspan1249-3"
+         x="64.257202"
+         y="135.047"
+         style="font-size:4.93888903px;stroke-width:0.26458332">Rétablissement</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:7.05555534px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="64.703339"
+       y="144.11526"
+       id="tPendingStart"
+       inkscape:label=""><tspan
+         sodipodi:role="line"
+         id="tspan1249-1"
+         x="64.703339"
+         y="144.11526"
+         style="font-size:4.93888903px;stroke-width:0.26458332">Attente démarrage</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:7.05555534px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="64.997551"
+       y="153.50668"
+       id="tPlaying"
+       inkscape:label=""><tspan
+         sodipodi:role="line"
+         id="tspan1249-1-4"
+         x="64.997551"
+         y="153.50668"
+         style="font-size:4.93888903px;stroke-width:0.26458332">Jeu</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:7.05555534px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="64.257202"
+       y="163.11031"
+       id="tEndGame"
+       inkscape:label=""><tspan
+         sodipodi:role="line"
+         id="tspan1249-1-9"
+         x="64.257202"
+         y="163.11031"
+         style="font-size:4.93888903px;stroke-width:0.26458332">Fin de jeu</tspan></text>
+    <rect
+       inkscape:label=""
+       style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.18741314"
+       id="RecoveryBtn"
+       width="4.3542647"
+       height="4.1649489"
+       x="59.111088"
+       y="131.28079" />
+    <rect
+       inkscape:label=""
+       style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.18741314"
+       id="PendingStartBtn"
+       width="4.3542647"
+       height="4.1649489"
+       x="59.111088"
+       y="140.42734" />
+    <rect
+       inkscape:label=""
+       style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.18741314"
+       id="PlayingBtn"
+       width="4.3542647"
+       height="4.1649489"
+       x="59.111088"
+       y="149.5739" />
+    <rect
+       inkscape:label=""
+       style="display:inline;fill:#7e7e7e;fill-opacity:1;stroke-width:0.18741314"
+       id="EndGameBtn"
+       width="4.3542647"
+       height="4.1649489"
+       x="59.111088"
+       y="158.72044" />
+    <path
+       inkscape:label=""
+       style="fill:#36633a;fill-opacity:1;stroke:#000000;stroke-width:0.09599569;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m -19.031784,253.20555 2.69114,2.69113 a 5.2479659,5.2479659 0 0 0 0.850762,6.29469 5.2479659,5.2479659 0 0 0 7.4216985,1.4e-4 5.2479659,5.2479659 0 0 0 -7.7e-6,-7.42183 5.2479659,5.2479659 0 0 0 -6.2988108,-0.85462 l -2.687152,-2.68714 z m 5.44845,3.47081 a 2.5514605,2.5514605 0 0 1 3.6084676,0 2.5514605,2.5514605 0 0 1 -1.296e-4,3.60834 2.5514605,2.5514605 0 0 1 -3.60821,0 2.5514605,2.5514605 0 0 1 -1.28e-4,-3.60834 z"
+       id="KeyLeftOFF"
+       inkscape:connector-curvature="0"
+       inkscape:transform-center-y="-1.001509"
+       inkscape:transform-center-x="1.0015781" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:7.05555534px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-22.690546"
+       y="249.4124"
+       id="text1266"><tspan
+         sodipodi:role="line"
+         id="tspan1264"
+         x="-22.690546"
+         y="249.4124"
+         style="font-size:3.52777767px;stroke-width:0.26458332">OFF</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:7.05555534px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-7.1221008"
+       y="249.67967"
+       id="text1270"><tspan
+         sodipodi:role="line"
+         id="tspan1268"
+         x="-7.1221008"
+         y="249.67967"
+         style="font-size:3.52777767px;stroke-width:0.26458332">ON</tspan></text>
+    <circle
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path1272"
+       cx="-18.948771"
+       cy="251.14964"
+       r="1.2695302" />
+    <circle
+       style="display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path1272-2"
+       cx="-4.449398"
+       cy="251.28328"
+       r="1.2695302" />
+    <g
+       id="g1358">
+      <path
+         inkscape:transform-center-x="-1.0015086"
+         style="fill:#36633a;fill-opacity:1;stroke:#000000;stroke-width:0.09599569;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 37.861077,251.22778 -2.691128,2.69114 a 5.2479659,5.2479659 0 0 0 -6.29469,0.85076 5.2479659,5.2479659 0 0 0 -1.43e-4,7.4217 5.2479659,5.2479659 0 0 0 7.42183,-10e-6 5.2479659,5.2479659 0 0 0 0.854622,-6.29881 l 2.687138,-2.68715 z m -3.470811,5.44845 a 2.5514605,2.5514605 0 0 1 4e-6,3.60847 2.5514605,2.5514605 0 0 1 -3.608345,-1.3e-4 2.5514605,2.5514605 0 0 1 0,-3.60821 2.5514605,2.5514605 0 0 1 3.608341,-1.3e-4 z"
+         id="KeyRightOFF"
+         inkscape:connector-curvature="0"
+         inkscape:label=""
+         inkscape:transform-center-y="-1.0015793" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:7.05555534px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         x="41.45414"
+         y="252.48599"
+         id="text1331"><tspan
+           sodipodi:role="line"
+           id="tspan1329"
+           x="41.45414"
+           y="252.48599"
+           style="font-size:3.52777767px;stroke-width:0.26458332">OFF</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:7.05555534px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         x="41.921856"
+         y="267.05219"
+         id="text1335"><tspan
+           sodipodi:role="line"
+           id="tspan1333"
+           x="41.921856"
+           y="267.05219"
+           style="font-size:3.52777767px;stroke-width:0.26458332">ON</tspan></text>
+      <circle
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="circle1337"
+         cx="39.984161"
+         cy="265.71585"
+         r="1.2695302" />
+      <circle
+         style="display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="circle1339"
+         cx="39.917343"
+         cy="251.28328"
+         r="1.2695302" />
+      <path
+         inkscape:transform-center-y="1.0015093"
+         inkscape:label=""
+         inkscape:connector-curvature="0"
+         id="KeyRightON"
+         d="m 39.838847,263.7539 -2.69114,-2.69113 a 5.2479659,5.2479659 0 0 0 -0.85076,-6.29469 5.2479659,5.2479659 0 0 0 -7.4217,-1.4e-4 5.2479659,5.2479659 0 0 0 10e-6,7.42183 5.2479659,5.2479659 0 0 0 6.29881,0.85462 l 2.68715,2.68714 z m -5.44845,-3.47081 a 2.5514605,2.5514605 0 0 1 -3.60847,0 2.5514605,2.5514605 0 0 1 1.3e-4,-3.60834 2.5514605,2.5514605 0 0 1 3.60821,0 2.5514605,2.5514605 0 0 1 1.3e-4,3.60834 z"
+         style="fill:#36633a;fill-opacity:1;stroke:#000000;stroke-width:0.09599569;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         inkscape:transform-center-x="-1.0015789" />
+    </g>
+    <path
+       inkscape:transform-center-x="-1.0015086"
+       inkscape:transform-center-y="-1.0015787"
+       inkscape:connector-curvature="0"
+       id="KeyLeftON"
+       d="m -6.5056651,251.22778 -2.69113,2.69114 a 5.2479659,5.2479659 0 0 0 -6.2946899,0.85076 5.2479659,5.2479659 0 0 0 -1.4e-4,7.4217 5.2479659,5.2479659 0 0 0 7.4218299,-10e-6 5.2479659,5.2479659 0 0 0 0.85462,-6.29881 l 2.68714,-2.68715 z m -3.47081,5.44845 a 2.5514605,2.5514605 0 0 1 0,3.60847 2.5514605,2.5514605 0 0 1 -3.6083399,-1.3e-4 2.5514605,2.5514605 0 0 1 0,-3.60821 2.5514605,2.5514605 0 0 1 3.6083399,-1.3e-4 z"
+       style="fill:#36633a;fill-opacity:1;stroke:#000000;stroke-width:0.09599569;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       inkscape:label="" />
   </g>
 </svg>
-
 
 </body>
 </html>
