@@ -186,17 +186,20 @@
 			var UICasisersAmovibles = null;
 			var UIRightCasques = Array(4).fill(null); 
 			var UICasqueTextFinished = null;
+			var UICasqueTextRecovery = null;
 			var UICasqueForceBtn = null;
 			
 			var UIOpenedV = Array(9).fill(null);	
 			var UIClosedV = Array(9).fill(null);	
 			var UIValvesTextFinished = null;
+			var UIValvesTextRecovery = null;
 			var UIValvesForceBtn = null;
 			
 			var UIBreakerON = Array(8).fill(null);
 			var UIBreakerOFF = Array(8).fill(null);
 			var UIBreakerRight = Array(8).fill(null);		
 			var UIBreakerTextFinished = null;
+			var UIBreakerTextRecovery = null;
 			var UIBreakerForceBtn = null;
 			
 			var UISimonbtnG = null;
@@ -222,6 +225,7 @@
 			var UIKeyRightON = null;
 			var UIKeyForceBtn = null;
 			var UIKeysTextFinished = null;
+			var UIKeysTextRecovery = null;
 			
 			var UIRecoveryText = null;
 			var UIPendingStartText = null;
@@ -249,6 +253,7 @@
 				UIRightCasques[2] = svgROOT.getElementById("RightCasque3");
 				UIRightCasques[3] = svgROOT.getElementById("RightCasque4");		
 				UICasqueTextFinished = svgROOT.getElementById("tCasqueFinished");
+				UICasqueTextRecovery = svgROOT.getElementById("tCasqueRecovery");
 				UICasqueForceBtn = svgROOT.getElementById("CasqueBtn");
 				
 				UIOpenedV[0] = svgROOT.getElementById("OpenedV1");
@@ -270,6 +275,7 @@
 				UIClosedV[7] = svgROOT.getElementById("ClosedV8");
 				UIClosedV[8] = svgROOT.getElementById("ClosedV9");
 				UIValvesTextFinished = svgROOT.getElementById("tValvesFinished");
+				UIValvesTextRecovery = svgROOT.getElementById("tValvesRecovery");
 				UIValvesForceBtn = svgROOT.getElementById("ValveBtn");
 				
 				UIBreakerON[0] = svgROOT.getElementById("ON1");
@@ -300,6 +306,7 @@
 				UIBreakerRight[7] = svgROOT.getElementById("RightB8");
 				UIBreakerRight[8] = svgROOT.getElementById("RightB9");
 				UIBreakerTextFinished = svgROOT.getElementById("tDisjFinished");
+				UIBreakerTextRecovery = svgROOT.getElementById("tDisjRecovery");
 				UIBreakerForceBtn = svgROOT.getElementById("BreakerBtn");
 
 				UISimonbtnG = svgROOT.getElementById("btnG");
@@ -340,6 +347,7 @@
 				UIKeyLeftON = svgROOT.getElementById("KeyLeftON");
 				UIKeyRightON = svgROOT.getElementById("KeyRightON");
 				UIKeysTextFinished = svgROOT.getElementById("tKeysFinished");
+				UIKeysTextRecovery = svgROOT.getElementById("tKeysRecovery");
 				UIKeyForceBtn = svgROOT.getElementById("KeyBtn");
 				
 				UIRecoveryText = svgROOT.getElementById("tRecovery");
@@ -981,6 +989,17 @@
 					var seconds = elapsedTime % 60;
 					var minutes = (elapsedTime - seconds) / 60;		
 					UITimer.textContent = "Time: " + minutes + ":" + seconds;
+
+
+					if ( gameState == 0) {
+						if (isHelmetsReadyToPlay) {
+							UICasqueTextRecovery.style.opacity = 1;
+						} else {
+							UICasqueTextRecovery.style.opacity = 0;
+						}
+					} else {
+						UICasqueTextRecovery.style.opacity = 0;
+					}
 					
 					for (var i = 0; i < CasquesPDO.length; i++) {
 						if (CasquesPDO[i]) {
@@ -1025,6 +1044,16 @@
 					} else {
 						UICasqueTextFinished.style.opacity = 0;
 					}
+
+					if ( gameState == 0) {
+						if (isValvesReadyToPlay) {
+							UIValvesTextRecovery.style.opacity = 1;
+						} else {
+							UIValvesTextRecovery.style.opacity = 0;
+						}
+					} else {
+						UIValvesTextRecovery.style.opacity = 0;
+					}
 					
 					
 					for (var i = 0; i < ValvesPDO.length; i++) {
@@ -1051,6 +1080,15 @@
 						UIValvesTextFinished.style.opacity = 0;
 					}
 					
+					if ( gameState == 0) {
+						if (isBreakerReadyToPlay) {
+							UIBreakerTextRecovery.style.opacity = 1;
+						} else {
+							UIBreakerTextRecovery.style.opacity = 0;
+						}
+					} else {
+						UIBreakerTextRecovery.style.opacity = 0;
+					}
 					
 					for (var i = 0; i < BreakerPDO.length; i++) {
 						if (BreakerPDO[i]) {			
@@ -1183,6 +1221,16 @@
 					} else {
 						UISimonTextFinished.style.opacity = 0;
 					}
+
+					if ( gameState == 0) {
+						if (isKeysReadyToPlay) {
+							UIKeysTextRecovery.style.opacity = 1;
+						} else {
+							UIKeysTextRecovery.style.opacity = 0;
+						}
+					} else {
+						UIKeysTextRecovery.style.opacity = 0;
+					}
 					
 					if (KeysLeftKeyPDO) {
 						UIKeyLeftOFF.style.opacity = 0;
@@ -1210,28 +1258,44 @@
 					
 					switch(gameState) {
 						case 0:
-							UIRecoveryText.style.fill = "#00ff00ff";
+							UIRecoveryText.style.fill       = "#00ff00ff";
+							UIRecoveryBtn.style.fill        = "#00ff00ff";
 							UIPendingStartText.style.fill   = "#000000ff";
+							UIPendingStartBtn.style.fill    = "#000000ff";
 							UIPlayingText.style.fill        = "#000000ff";
+							UIPlayingBtn.style.fill         = "#000000ff";
 							UIEndGameText.style.fill        = "#000000ff";
+							UIEndGameBtn.style.fill         = "#000000ff";
 							break;
 						case 1:
-							UIRecoveryText.style.fill = "#000000ff";
+							UIRecoveryText.style.fill       = "#000000ff";
+							UIRecoveryBtn.style.fill        = "#000000ff";
 							UIPendingStartText.style.fill   = "#00ff00ff";
+							UIPendingStartBtn.style.fill    = "#00ff00ff";
 							UIPlayingText.style.fill        = "#000000ff";
+							UIPlayingBtn.style.fill         = "#000000ff";
 							UIEndGameText.style.fill        = "#000000ff";
+							UIEndGameBtn.style.fill         = "#000000ff";
 							break;
 						case 2:
-							UIRecoveryText.style.fill = "#000000ff";
+							UIRecoveryText.style.fill       = "#000000ff";
+							UIRecoveryBtn.style.fill        = "#000000ff";
 							UIPendingStartText.style.fill   = "#000000ff";
+							UIPendingStartBtn.style.fill    = "#000000ff";
 							UIPlayingText.style.fill        = "#00ff00ff";
+							UIPlayingBtn.style.fill         = "#00ff00ff";
 							UIEndGameText.style.fill        = "#000000ff";
+							UIEndGameBtn.style.fill         = "#000000ff";
 							break;
 						case 3:
-							UIRecoveryText.style.fill = "#000000ff";
+							UIRecoveryText.style.fill       = "#000000ff";
+							UIRecoveryBtn.style.fill        = "#000000ff";
 							UIPendingStartText.style.fill   = "#000000ff";
+							UIPendingStartBtn.style.fill    = "#000000ff";
 							UIPlayingText.style.fill        = "#000000ff";
+							UIPlayingBtn.style.fill         = "#000000ff";
 							UIEndGameText.style.fill        = "#00ff00ff";
+							UIEndGameBtn.style.fill         = "#00ff00ff";
 							break;
 					}
 					
@@ -1297,6 +1361,7 @@
     </script>
 </head>
 <body>
+
 <svg
    xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"
    xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -1550,10 +1615,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.979899"
-     inkscape:cx="551.83957"
-     inkscape:cy="95.280166"
+     inkscape:cx="622.80202"
+     inkscape:cy="92.92767"
      inkscape:document-units="mm"
-     inkscape:current-layer="g1358"
+     inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1366"
      inkscape:window-height="706"
@@ -3812,6 +3877,54 @@
        d="m -6.5056651,251.22778 -2.69113,2.69114 a 5.2479659,5.2479659 0 0 0 -6.2946899,0.85076 5.2479659,5.2479659 0 0 0 -1.4e-4,7.4217 5.2479659,5.2479659 0 0 0 7.4218299,-10e-6 5.2479659,5.2479659 0 0 0 0.85462,-6.29881 l 2.68714,-2.68715 z m -3.47081,5.44845 a 2.5514605,2.5514605 0 0 1 0,3.60847 2.5514605,2.5514605 0 0 1 -3.6083399,-1.3e-4 2.5514605,2.5514605 0 0 1 0,-3.60821 2.5514605,2.5514605 0 0 1 3.6083399,-1.3e-4 z"
        style="fill:#36633a;fill-opacity:1;stroke:#000000;stroke-width:0.09599569;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:label="" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-98.093613"
+       y="176.25327"
+       id="tCasqueRecovery"
+       inkscape:label=""><tspan
+         sodipodi:role="line"
+         id="tspan4619-6-3"
+         x="-98.093613"
+         y="176.25327"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Rétabli</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-105.65977"
+       y="230.2417"
+       id="tValvesRecovery"
+       inkscape:label=""><tspan
+         sodipodi:role="line"
+         id="tspan4619-6-3-1"
+         x="-105.65977"
+         y="230.2417"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Rétabli</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-0.088305637"
+       y="256.96866"
+       id="tKeysRecovery"
+       inkscape:label=""><tspan
+         sodipodi:role="line"
+         id="tspan4619-6-3-1-3"
+         x="-0.088305637"
+         y="256.96866"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Rétabli</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#06f627;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-1.5582882"
+       y="230.64261"
+       id="tDisjRecovery"
+       inkscape:label=""><tspan
+         sodipodi:role="line"
+         id="tspan4619-6-3-1-3-2"
+         x="-1.5582882"
+         y="230.64261"
+         style="font-size:7.05555534px;stroke-width:0.26458332">Rétabli</tspan></text>
   </g>
 </svg>
 
